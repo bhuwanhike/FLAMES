@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 
 const Navbar = () => {
@@ -9,31 +10,31 @@ const Navbar = () => {
   return (
     <nav className="bg-white shadow-md px-6 py-4 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        {/* Logo + Name */}
-        <div className="flex items-center space-x-2">
-          <div className="text-2xl font-bold text-blue-600">Startvestor</div>
-        </div>
+        {/* Logo */}
+        <Link to="/" className="text-2xl font-bold text-blue-600">
+          Startvestor
+        </Link>
 
         {/* Desktop Menu */}
         <div className="hidden md:flex space-x-6 text-gray-700 font-medium">
-          <a href="#" className="hover:text-blue-600">
+          <Link to="/" className="hover:text-blue-600">
             Home
-          </a>
-          <a href="#startups" className="hover:text-blue-600">
+          </Link>
+          <Link to="/startups" className="hover:text-blue-600">
             Startups
-          </a>
-          <a href="#investors" className="hover:text-blue-600">
+          </Link>
+          <Link to="/investors" className="hover:text-blue-600">
             Investors
-          </a>
-          <a href="#about" className="hover:text-blue-600">
+          </Link>
+          <Link to="/about" className="hover:text-blue-600">
             About
-          </a>
-          <a href="#contact" className="hover:text-blue-600">
+          </Link>
+          <Link to="/contact" className="hover:text-blue-600">
             Contact
-          </a>
+          </Link>
         </div>
 
-        {/* Mobile Menu Button */}
+        {/* Mobile Toggle Button */}
         <button className="md:hidden text-gray-700" onClick={toggleMenu}>
           {isOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
@@ -42,21 +43,21 @@ const Navbar = () => {
       {/* Mobile Menu */}
       {isOpen && (
         <div className="md:hidden mt-2 space-y-2 px-4 pb-4 text-gray-700">
-          <a href="#" className="block hover:text-blue-600">
+          <Link to="/" className="block hover:text-blue-600">
             Home
-          </a>
-          <a href="#startups" className="block hover:text-blue-600">
+          </Link>
+          <Link to="/startups" className="block hover:text-blue-600">
             Startups
-          </a>
-          <a href="#investors" className="block hover:text-blue-600">
+          </Link>
+          <Link to="/investors" className="block hover:text-blue-600">
             Investors
-          </a>
-          <a href="#about" className="block hover:text-blue-600">
+          </Link>
+          <Link to="/about" className="block hover:text-blue-600">
             About
-          </a>
-          <a href="#contact" className="block hover:text-blue-600">
+          </Link>
+          <Link to="/contact" className="block hover:text-blue-600">
             Contact
-          </a>
+          </Link>
         </div>
       )}
     </nav>
