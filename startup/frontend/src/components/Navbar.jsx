@@ -1,9 +1,15 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    setIsLoggedIn(!!token);
+  }, []); // Only runs on mount
 
   const toggleMenu = () => setIsOpen(!isOpen);
 
@@ -16,9 +22,9 @@ const Navbar = () => {
         </Link>
 
         {/* Desktop Menu */}
-        <div className="hidden md:flex space-x-6 text-gray-700 font-medium">
+        <div className="hidden md:flex space-x-6 text-gray-700 font-medium items-center">
           <Link to="/" className="hover:text-blue-600">
-            Home
+            Explore
           </Link>
           <Link to="/startups" className="hover:text-blue-600">
             Startups
@@ -30,8 +36,16 @@ const Navbar = () => {
             About
           </Link>
           <Link to="/contact" className="hover:text-blue-600">
-            Contact
+            Account
           </Link>
+          {!isLoggedIn && (
+            <Link
+              to="/login"
+              className="ml-4 px-4 py-2 bg-blue-500 !text-white rounded"
+            >
+              Login / Signup
+            </Link>
+          )}
         </div>
 
         {/* Mobile Toggle Button */}
