@@ -37,12 +37,7 @@ const Investor = () => {
     {
       name: "Anupam Mittal",
       location: "Mumbai, India",
-<<<<<<< HEAD
-      industries:
-        "Consumer Internet, E-commerce, HealthTech, FinTech, Mobility",
-=======
       industries: "Consumer Internet, E-commerce, HealthTech, FinTech, Mobility",
->>>>>>> ab99b2e9a637461f51d78e393b17fc87cf7895ca
       stage: "Pre-Seed, Seed, Series A",
       risk: "Medium",
       portfolioSize: "$25M+ (Angel Investments)",
@@ -51,24 +46,14 @@ const Investor = () => {
       name: "Kunal Bahl",
       location: "New Delhi, India",
       industries: "Consumer Tech, Fintech, SaaS, Mobility, Health-Tech",
-<<<<<<< HEAD
-      stage:
-        "Pre-Seed, Seed, Series A (Titan Capital focuses on early-stage deals)",
-=======
       stage: "Pre-Seed, Seed, Series A (Titan Capital focuses on early-stage deals)",
->>>>>>> ab99b2e9a637461f51d78e393b17fc87cf7895ca
       risk: "Medium-High ",
       portfolioSize: "Invested in 250-300+ startups",
     },
     {
       name: "Rajan Anandan",
       location: "Bengaluru, India",
-<<<<<<< HEAD
-      industries:
-        "Internet, Mobile, SaaS, AI, EdTech, AgriTech, HealthTech, Mobility, Biotech",
-=======
       industries: "Internet, Mobile, SaaS, AI, EdTech, AgriTech, HealthTech, Mobility, Biotech",
->>>>>>> ab99b2e9a637461f51d78e393b17fc87cf7895ca
       stage: "Early-stage (Pre-Seed, Seed, Series A)",
       risk: "Medium",
       portfolioSize: "Over 70 personal investments",
@@ -76,15 +61,8 @@ const Investor = () => {
     {
       name: "Binny Bansal",
       location: "Bengaluru, India",
-<<<<<<< HEAD
-      industries:
-        "E-commerce, Internet, HealthTech, FinTech, EdTech, Robotics, SaaS",
-      stage:
-        "Seed to Series A (also leads Series B in select deals via 3State Ventures/021 Capital)",
-=======
       industries: "E-commerce, Internet, HealthTech, FinTech, EdTech, Robotics, SaaS",
       stage: "Seed to Series A (also leads Series B in select deals via 3State Ventures/021 Capital)",
->>>>>>> ab99b2e9a637461f51d78e393b17fc87cf7895ca
       risk: "Medium-High",
       portfolioSize: "60+ startups across 60+ funding rounds",
     },

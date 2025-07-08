@@ -13,6 +13,28 @@ const Home = () => {
           AI-driven matchmaking platform that helps innovative startups find
           investors who believe in their vision.
         </p>
+
+        {/* Image Container for Left/Right Layout */}
+        <div className="flex flex-col md:flex-row justify-center items-center gap-6 mb-8 w-full max-w-4xl mx-auto">
+          {/* First Image */}
+          <div className="w-full md:w-1/2 lg:w-5/12 h-80"> {/* Added fixed height h-80 */}
+            <img
+              src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTKxjbUimXQJCUrzTagSUr4ItmbezqWrBFfgg&s"
+              alt="Illustrative image of a startup team meeting with investors"
+              className="rounded-lg shadow-xl w-full h-full object-cover" // h-full to fill parent div
+            />
+          </div>
+
+          {/* Second Image */}
+          <div className="w-full md:w-1/2 lg:w-5/12 h-80"> {/* Added fixed height h-80 */}
+            <img
+              src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRQ7LF08wGgCjybDOaXzdth1XLQMagolywHcA&s"
+              alt="Illustrative image of a startup and investors collaborating"
+              className="rounded-lg shadow-xl w-full h-full object-cover" // h-full to fill parent div
+            />
+          </div>
+        </div>
+
         <div className="flex flex-col md:flex-row gap-4">
           <Link
             to="/startups"
