@@ -60,7 +60,7 @@ const Navbar = () => {
           {settingToggle && (
             <div className="absolute top-20 right-70 bg-white p-4 rounded-lg shadow-lg z-50 ">
               <Link
-                to="/settings"
+                to="/settings/profile"
                 onClick={() => {
                   setSettingToggle(false);
                 }}

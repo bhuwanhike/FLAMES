@@ -1,4 +1,4 @@
-import { Routes, Route, useLocation } from "react-router-dom";
+import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 import "./App.css";
 import Explore from "./Routes/Explore";
 import Navbar from "./components/Navbar";
@@ -9,10 +9,16 @@ import Register from "./Routes/Register";
 import Login from "./Routes/Login";
 import { AuthProvider } from "./contexts/AuthContext";
 import Settings from "./Routes/Settings";
+import ProfileContent from "./Routes/ProfileContent";
+import DashboardContent from "./Routes/DashboardContent";
 
 function App() {
   const location = useLocation();
-  const hideNavbarOnPaths = ["/settings"];
+  const hideNavbarOnPaths = [
+    "/settings",
+    "/settings/profile",
+    "/settings/dashboard",
+  ];
   return (
     <AuthProvider>
       {!hideNavbarOnPaths.includes(location.pathname) && <Navbar />}
@@ -23,7 +29,11 @@ function App() {
         <Route path="/about" element={<About />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/settings" element={<Settings />} />
+        <Route path="/settings" element={<Settings />}>
+          <Route index element={<Navigate to="settings/profile" replace />} />
+          <Route path="profile" element={<ProfileContent />} />
+          <Route path="dashboard" element={<DashboardContent />} />
+        </Route>
       </Routes>
     </AuthProvider>
   );
