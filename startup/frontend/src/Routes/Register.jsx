@@ -30,7 +30,7 @@ const Register = () => {
       );
       setSuccess(response.data.message);
       // Store token in localStorage or use context
-      localStorage.setItem("token", response.data.token);
+      localStorage.setItem("token-startup", response.data.token);
       navigate("/"); // Redirect to dashboard after successful registration
     } catch (error) {
       setError(error.response?.data?.message || "Registration failed");

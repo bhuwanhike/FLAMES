@@ -10,7 +10,7 @@ const loginController = async (req, res) => {
         const token = await userExist.generateToken();
         res
           .status(201)
-          .json({ message: "Logged insuccessfully", token: token });
+          .json({ message: "Logged in successfully", token: token, username: username });
       } else {
         res.status(400).json({ message: "Invalid user" });
       }

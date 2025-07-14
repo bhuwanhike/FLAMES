@@ -36,7 +36,12 @@ RegisterSchema.methods = {
   },
   async generateToken() {
     return await jwt.sign(
-      { id: this._id.toString(), email: this.email, role: this.role },
+      {
+        id: this._id.toString(),
+        email: this.email,
+        role: this.role,
+        username: this.username,
+      },
       process.env.JWT_SECRET,
       { expiresIn: "30d" }
     );

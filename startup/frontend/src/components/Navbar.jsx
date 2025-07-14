@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useContext } from "react";
 import { Link } from "react-router-dom";
 import { Menu, X } from "lucide-react";
+import { AuthContext } from "../contexts/auth-context";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { isLoggedIn, Fletter, logout } = useContext(AuthContext);
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    setIsLoggedIn(!!token);
-  }, []); // Only runs on mount
+  const [settingToggle, setSettingToggle] = useState(false);
+
+  const handleSettingToggle = () => setSettingToggle(!settingToggle);
 
   const toggleMenu = () => setIsOpen(!isOpen);
 
@@ -35,9 +35,10 @@ const Navbar = () => {
           <Link to="/about" className="hover:text-blue-600">
             About
           </Link>
-          <Link to="/contact" className="hover:text-blue-600">
-            Account
-          </Link>
+          <div className="flex items-center">
+            <div className="flex items-center w-10 h-10 rounded-full mr-2"></div>
+            <span className="text-sm font-medium"></span>
+          </div>
           {!isLoggedIn && (
             <Link
               to="/login"
@@ -45,6 +46,38 @@ const Navbar = () => {
             >
               Login / Signup
             </Link>
+          )}
+
+          {isLoggedIn && (
+            <div
+              className="bg-red-600 w-10 h-10 rounded-full flex items-center justify-center text-white text-2xl hover:cursor-pointer"
+              onClick={handleSettingToggle}
+            >
+              {Fletter}
+            </div>
+          )}
+
+          {settingToggle && (
+            <div className="absolute top-20 right-70 bg-white p-4 rounded-lg shadow-lg z-50 ">
+              <Link
+                to="/settings"
+                onClick={() => {
+                  setSettingToggle(false);
+                }}
+                className="block hover:text-blue-600 mb-2"
+              >
+                Settings
+              </Link>
+              <div
+                onClick={() => {
+                  logout();
+                  setSettingToggle(false);
+                }}
+                className=" hover:text-red-600 hover:cursor-pointer text-red-400 border-t-2 border-gray-200 pt-2"
+              >
+                Log out
+              </div>
+            </div>
           )}
         </div>
 
@@ -55,25 +88,37 @@ const Navbar = () => {
       </div>
 
       {/* Mobile Menu */}
-      {isOpen && (
-        <div className="md:hidden mt-2 space-y-2 px-4 pb-4 text-gray-700">
-          <Link to="/" className="block hover:text-blue-600">
-            Home
+      <div
+        className={`md:hidden ${
+          isOpen ? "block" : "hidden"
+        } bg-white p-4 rounded-lg shadow-lg absolute top-16 right-4`}
+      >
+        <Link to="/" className="block hover:text-blue-600 mb-2">
+          Explore
+        </Link>
+        <Link to="/startups" className="block hover:text-blue-600 mb-2">
+          Startups
+        </Link>
+        <Link to="/investors" className="block hover:text-blue-600 mb-2">
+          Investors
+        </Link>
+        <Link to="/about" className="block hover:text-blue-600 mb-2">
+          About
+        </Link>
+        {!isLoggedIn && (
+          <Link
+            to="/login"
+            className="block bg-blue-500 text-white px-4 py-2 rounded mt-2"
+          >
+            Login / Signup
           </Link>
-          <Link to="/startups" className="block hover:text-blue-600">
-            Startups
-          </Link>
-          <Link to="/investors" className="block hover:text-blue-600">
-            Investors
-          </Link>
-          <Link to="/about" className="block hover:text-blue-600">
-            About
-          </Link>
-          <Link to="/contact" className="block hover:text-blue-600">
-            Contact
-          </Link>
-        </div>
-      )}
+        )}
+        {
+          <div className="bg-red-600 w-10 h-10 rounded-full flex items-center justify-center text-white">
+            {Fletter}
+          </div>
+        }
+      </div>
     </nav>
   );
 };
