@@ -1,18 +1,18 @@
-import React, { useState } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { Briefcase, MapPin, Lightbulb, LinkIcon } from "lucide-react";
+import { AuthContext } from "../contexts/auth-context";
+import axios from "axios";
 
 const Startup = () => {
-  const [showForm, setShowForm] = useState(false);
-  const [expandedCard, setExpandedCard] = useState(null);
-
-  const startupList = [
+  const demoStartupList = [
     {
       name: "Cred",
       industry: "FinTech(Credit-Centric Financial Services",
       location: "Bengaluru, India",
       idea: "Fintech platform that rewards creditworthy users for timely bill payments with exclusive financial and lifestyle benefits.",
       funding: "$72M",
-      traction: "13+ million monthly active users, managing 22% of India's credit-card market.",
+      traction:
+        "13+ million monthly active users, managing 22% of India's credit-card market.",
     },
     {
       name: "CarbonCraft",
@@ -44,7 +44,8 @@ const Startup = () => {
       location: "Bengaluru, India",
       idea: "Delivering fresh, ready-to-cook meats and seafood with a fully integrated supply chain.",
       funding: "$490M",
-      traction: "Operates in 20+ Indian cities, sells via own app and partners like Swiggy Instamart and Blinkit; narrowed FY24 losses but revenue fell to ₹687 Cr (~$82 M)",
+      traction:
+        "Operates in 20+ Indian cities, sells via own app and partners like Swiggy Instamart and Blinkit; narrowed FY24 losses but revenue fell to ₹687 Cr (~$82 M)",
     },
     {
       name: "Tata 1mg",
@@ -52,7 +53,8 @@ const Startup = () => {
       location: "Gurugram, India",
       idea: "India's leading digital healthcare platform offering medicine delivery, lab tests, e-consults, and health content.",
       funding: "$231M",
-      traction: "FY24 revenue ₹1,990 Cr ($240 M, +22% YoY); cut losses by ~75% in FY24; holds ~31% market share, overtaking PharmEasy",
+      traction:
+        "FY24 revenue ₹1,990 Cr ($240 M, +22% YoY); cut losses by ~75% in FY24; holds ~31% market share, overtaking PharmEasy",
     },
     {
       name: "Indian Angel Network (IAN)",
@@ -60,27 +62,58 @@ const Startup = () => {
       location: "New Delhi, India",
       idea: "A mentor-led network of experienced founders investing early in innovative startups across sectors.",
       funding: "$108M",
-      traction: " Active since 2006; 450+ members from 11 countries; portfolio includes scaleups like PregBuddy and SuperProfs",
+      traction:
+        " Active since 2006; 450+ members from 11 countries; portfolio includes scaleups like PregBuddy and SuperProfs",
     },
     {
       name: "CureBay",
-      industry: "HealthTech-Hybrid healthcare platform (telemedicine + micro-clinics in rural India)",
+      industry:
+        "HealthTech-Hybrid healthcare platform (telemedicine + micro-clinics in rural India)",
       location: "Bhubaneswar, India",
       idea: "Bridging gaps in rural healthcare by offering AI-enabled, last-mile teleconsultations and local clinic services.",
       funding: "$35.5M",
       traction: "~90,000 active users, >60% program renewal rate",
     },
   ];
+  const [showForm, setShowForm] = useState(false);
+  const [expandedCard, setExpandedCard] = useState(null);
+  const [showAlert, setShowAlert] = useState(false);
+  const [startupList, setStartupList] = useState(demoStartupList);
+  const { isLoggedIn } = useContext(AuthContext);
+
+  const addStartupData = async () => {
+    try {
+      await axios.post("http://localhost:5000/addstartup", formData, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const showStartups = async () => {
+    const startups = await axios.get("http://localhost:5000/startups");
+    const startupsData = startups.data;
+    if (startupsData.length > 0) {
+      setStartupList(startupsData);
+    }
+  };
+
+  useEffect(() => {
+    showStartups();
+  });
 
   const [formData, setFormData] = useState({
-    name: "",
+    startupName: "",
     industry: "",
     location: "",
     idea: "",
     funding: "",
     team: "",
     traction: "",
-    pitchDeck: "",
+    email: "",
   });
 
   const handleChange = (e) =>
@@ -88,8 +121,7 @@ const Startup = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log(formData);
-    alert("Startup submitted (mock)");
+
     setShowForm(false);
   };
 
@@ -99,7 +131,7 @@ const Startup = () => {
         🌱 Explore Innovative Startups
       </h2>
 
-      <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid items-start sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {startupList.map((startup, index) => (
           <div
             key={index}
@@ -123,12 +155,12 @@ const Startup = () => {
             {expandedCard === index && (
               <div className="mt-4 space-y-2 text-sm transition-all duration-300 ease-in-out">
                 <p className="flex items-center">
-                  <Lightbulb className="w-4 h-4 mr-1" /> <strong>Idea:</strong> {" "}
+                  <Lightbulb className="w-4 h-4 mr-1" /> <strong>Idea:</strong>{" "}
                   {startup.idea}
                 </p>
                 <p className="flex items-center">
-                  <Briefcase className="w-4 h-4 mr-1" /> <strong>Funding:</strong> {" "}
-                  {startup.funding}
+                  <Briefcase className="w-4 h-4 mr-1" />{" "}
+                  <strong>Funding:</strong> {startup.funding}
                 </p>
                 <p>
                   <strong>Traction:</strong> {startup.traction}
@@ -140,11 +172,27 @@ const Startup = () => {
       </div>
 
       <button
-        onClick={() => setShowForm(true)}
+        onClick={() => {
+          if (isLoggedIn) {
+            setShowForm(true);
+          } else {
+            setShowAlert(true);
+          }
+        }}
         className="fixed bottom-6 right-6 px-6 py-3 rounded-full bg-white/30 backdrop-blur-md border border-white/40 text-blue-700 font-bold shadow-lg hover:scale-105 transition transform hover:bg-white z-50"
       >
         + Submit Startup
       </button>
+
+      {/* Alert */}
+      {showAlert && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <Alert severity="error" onClose={() => setShowAlert(false)}>
+            <AlertTitle>Error</AlertTitle>
+            You need to be logged in to become an investor.
+          </Alert>
+        </div>
+      )}
 
       {showForm && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center px-4 animate-fade-in">
@@ -162,9 +210,9 @@ const Startup = () => {
               <div className="grid md:grid-cols-2 gap-6">
                 <input
                   type="text"
-                  name="name"
+                  name="startupName"
                   placeholder="Startup Name"
-                  value={formData.name}
+                  value={formData.startupName}
                   onChange={handleChange}
                   required
                   className="input"
@@ -190,10 +238,10 @@ const Startup = () => {
                   required
                 />
                 <input
-                  type="url"
-                  name="pitchDeck"
-                  placeholder="Pitch Deck URL"
-                  value={formData.pitchDeck}
+                  type="email"
+                  name="email"
+                  placeholder="Email"
+                  value={formData.email}
                   onChange={handleChange}
                   className="input"
                 />
@@ -209,9 +257,9 @@ const Startup = () => {
               />
               <input
                 type="text"
-                name="funding"
+                name="fundingNeeded"
                 placeholder="Funding Needed"
-                value={formData.funding}
+                value={formData.fundingNeeded}
                 onChange={handleChange}
                 className="input"
                 required
@@ -235,6 +283,7 @@ const Startup = () => {
               />
               <div className="text-right">
                 <button
+                  onClick={addStartupData}
                   type="submit"
                   className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg shadow-md transition"
                 >

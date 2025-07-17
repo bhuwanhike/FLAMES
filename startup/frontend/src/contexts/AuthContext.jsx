@@ -19,7 +19,6 @@ export const AuthProvider = ({ children }) => {
     setIsLoggedIn(true);
     const decoded = jwtDecode(token);
     const username = decoded.username || decoded.sub;
-    // console.log(username);
     setFletter(username.charAt(0).toUpperCase());
     return true;
   };

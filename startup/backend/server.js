@@ -6,6 +6,8 @@ connectToDB();
 import registerRoute from "./Route/Register.route.js";
 import loginRoute from "./Route/login.route.js";
 import userRoute from "./Route/user.route.js";
+import addInvestorRoute from "./Route/addInvestor.route.js";
+import addStartupRoute from "./Route/addstartup.route.js";
 import cors from "cors";
 const app = express();
 
@@ -23,6 +25,8 @@ app.use(express.json());
 app.use("/", registerRoute);
 app.use("/", loginRoute);
 app.use("/", userRoute);
+app.use("/", addInvestorRoute);
+app.use("/", addStartupRoute);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

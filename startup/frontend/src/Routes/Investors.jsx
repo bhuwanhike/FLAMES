@@ -1,31 +1,11 @@
-import React, { useState } from "react";
-import { Briefcase, MapPin, LineChart } from "lucide-react";
+import React, { useEffect, useState, useContext } from "react";
+import { Alert, AlertTitle } from "@mui/material";
+import { Briefcase, MapPin } from "lucide-react";
+import axios from "axios";
+import { AuthContext } from "../contexts/auth-context";
 
 const Investor = () => {
-  const [showForm, setShowForm] = useState(false);
-  const [expandedCard, setExpandedCard] = useState(null);
-
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    location: "",
-    industries: "",
-    stage: "",
-    risk: "",
-    portfolioSize: "",
-  });
-
-  const handleChange = (e) =>
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log(formData);
-    alert("Investor submitted (mock)");
-    setShowForm(false);
-  };
-
-  const investorsList = [
+  const demoInvestorsList = [
     {
       name: "Kunal Shah",
       location: "Mumbai, India",
@@ -37,7 +17,8 @@ const Investor = () => {
     {
       name: "Anupam Mittal",
       location: "Mumbai, India",
-      industries: "Consumer Internet, E-commerce, HealthTech, FinTech, Mobility",
+      industries:
+        "Consumer Internet, E-commerce, HealthTech, FinTech, Mobility",
       stage: "Pre-Seed, Seed, Series A",
       risk: "Medium",
       portfolioSize: "$25M+ (Angel Investments)",
@@ -46,14 +27,16 @@ const Investor = () => {
       name: "Kunal Bahl",
       location: "New Delhi, India",
       industries: "Consumer Tech, Fintech, SaaS, Mobility, Health-Tech",
-      stage: "Pre-Seed, Seed, Series A (Titan Capital focuses on early-stage deals)",
+      stage:
+        "Pre-Seed, Seed, Series A (Titan Capital focuses on early-stage deals)",
       risk: "Medium-High ",
       portfolioSize: "Invested in 250-300+ startups",
     },
     {
       name: "Rajan Anandan",
       location: "Bengaluru, India",
-      industries: "Internet, Mobile, SaaS, AI, EdTech, AgriTech, HealthTech, Mobility, Biotech",
+      industries:
+        "Internet, Mobile, SaaS, AI, EdTech, AgriTech, HealthTech, Mobility, Biotech",
       stage: "Early-stage (Pre-Seed, Seed, Series A)",
       risk: "Medium",
       portfolioSize: "Over 70 personal investments",
@@ -61,8 +44,10 @@ const Investor = () => {
     {
       name: "Binny Bansal",
       location: "Bengaluru, India",
-      industries: "E-commerce, Internet, HealthTech, FinTech, EdTech, Robotics, SaaS",
-      stage: "Seed to Series A (also leads Series B in select deals via 3State Ventures/021 Capital)",
+      industries:
+        "E-commerce, Internet, HealthTech, FinTech, EdTech, Robotics, SaaS",
+      stage:
+        "Seed to Series A (also leads Series B in select deals via 3State Ventures/021 Capital)",
       risk: "Medium-High",
       portfolioSize: "60+ startups across 60+ funding rounds",
     },
@@ -75,6 +60,62 @@ const Investor = () => {
       portfolioSize: "30+ startups personally invested",
     },
   ];
+  const [showForm, setShowForm] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
+  const [investorsList, setInvestorsList] = useState(demoInvestorsList);
+  const [expandedCard, setExpandedCard] = useState(
+    new Array(investorsList.length).fill(false)
+  );
+  const { isLoggedIn } = useContext(AuthContext);
+
+  const addInvestorData = async () => {
+    try {
+      await axios.post("http://localhost:5000/addinvestor", formData, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const toggleCard = (index) => {
+    setExpandedCard((prev) =>
+      prev.map((isExpanded, i) => (i === index ? !isExpanded : isExpanded))
+    );
+  };
+
+  const showInvestors = async () => {
+    const investors = await axios.get("http://localhost:5000/investors");
+    const investorsData = investors.data;
+    if (investorsData.length > 0) {
+      setInvestorsList(investorsData);
+    }
+  };
+
+  useEffect(() => {
+    showInvestors();
+  });
+
+  const [formData, setFormData] = useState({
+    fullname: "",
+    email: "",
+    location: "",
+    industry: "",
+    stage: "",
+    risk: "",
+    portfolioSize: "",
+  });
+
+  const handleChange = (e) =>
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    setShowForm(false);
+  };
 
   return (
     <div className="min-h-screen px-4 py-10 max-w-6xl mx-auto font-sans bg-gradient-to-tr from-gray-100 via-white to-gray-200 text-gray-800">
@@ -83,19 +124,23 @@ const Investor = () => {
       </h2>
 
       {/* Investor Cards */}
-      <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid items-start sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {investorsList.map((inv, index) => (
           <div
             key={index}
-            onClick={() =>
-              setExpandedCard(index === expandedCard ? null : index)
-            }
             className="bg-white shadow-xl rounded-2xl p-6 cursor-pointer border border-gray-200 transition-all hover:shadow-2xl group relative overflow-hidden"
           >
             <h3 className="text-xl font-semibold text-gray-800 flex justify-between items-center">
-              {inv.name}
-              <span className="text-sm text-blue-600 group-hover:underline">
-                {expandedCard === index ? "Close" : "View More"}
+              {inv.fullname}
+              <span
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleCard(index);
+                }}
+                id={index}
+                className="text-sm text-blue-600 group-hover:underline"
+              >
+                {expandedCard[index] ? "Close" : "View More"}
               </span>
             </h3>
 
@@ -103,10 +148,10 @@ const Investor = () => {
               <MapPin className="w-4 h-4 mr-1" /> {inv.location}
             </p>
 
-            {expandedCard === index && (
+            {expandedCard[index] && (
               <div className="mt-4 space-y-2 text-sm transition-all duration-300 ease-in-out">
                 <p>
-                  <strong>Industries:</strong> {inv.industries}
+                  <strong>Industries:</strong> {inv.industry}
                 </p>
                 <p>
                   <strong>Stage:</strong> {inv.stage}
@@ -128,11 +173,27 @@ const Investor = () => {
 
       {/* Glassy Floating Button */}
       <button
-        onClick={() => setShowForm(true)}
+        onClick={() => {
+          if (isLoggedIn) {
+            setShowForm(true);
+          } else {
+            setShowAlert(true);
+          }
+        }}
         className="fixed bottom-6 right-6 px-6 py-3 rounded-full bg-white/30 backdrop-blur-md border border-white/40 text-blue-700 font-bold shadow-lg hover:scale-105 transition transform hover:bg-white z-50"
       >
         + Become Investor
       </button>
+
+      {/* Alert */}
+      {showAlert && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <Alert severity="error" onClose={() => setShowAlert(false)}>
+            <AlertTitle>Error</AlertTitle>
+            You need to be logged in to become an investor.
+          </Alert>
+        </div>
+      )}
 
       {/* Modal */}
       {showForm && (
@@ -151,9 +212,9 @@ const Investor = () => {
               <div className="grid md:grid-cols-2 gap-6">
                 <input
                   type="text"
-                  name="name"
+                  name="fullname"
                   placeholder="Full Name"
-                  value={formData.name}
+                  value={formData.fullname}
                   onChange={handleChange}
                   required
                   className="input"
@@ -179,9 +240,9 @@ const Investor = () => {
                 />
                 <input
                   type="text"
-                  name="industries"
+                  name="industry"
                   placeholder="Industries of Interest"
-                  value={formData.industries}
+                  value={formData.industry}
                   onChange={handleChange}
                   className="input"
                 />
@@ -217,6 +278,7 @@ const Investor = () => {
               />
               <div className="text-right">
                 <button
+                  onClick={addInvestorData}
                   type="submit"
                   className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg shadow-md transition"
                 >
