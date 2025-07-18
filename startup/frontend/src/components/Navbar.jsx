@@ -17,9 +17,9 @@ const Navbar = () => {
     <nav className="bg-white shadow-md px-6 py-4 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         {/* Logo */}
-        <Link to="/" className="text-2xl font-bold text-blue-600">
-          PitchPort
-        </Link>
+    <Link to="/" className="logo-animation text-2xl font-bold">
+  PitchPort
+</Link>
 
         {/* Desktop Menu */}
         <div className="hidden md:flex space-x-6 text-gray-700 font-medium items-center">
