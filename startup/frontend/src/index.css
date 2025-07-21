@@ -13,11 +13,13 @@
 
 a {
   font-weight: 500;
-  color: #646cff;
+  color: white;
   text-decoration: inherit;
 }
 a:hover {
-  color: #535bf2;
+  color: #f3f4f6eb;
+  text-decoration: underline;
+  text-underline-offset: 5px;
 }
 
 body {
@@ -66,7 +68,89 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+<<<<<<< HEAD
 /* bg-[#0D1117] */
+=======
+
+/* Add these styles to index.css */
+@keyframes professionalPulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+    text-shadow: 0 0 0 rgba(37, 99, 235, 0.7);
+  }
+  50% {
+    transform: scale(1.03);
+    opacity: 0.9;
+    text-shadow: 0 0 8px rgba(37, 99, 235, 0.4);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+    text-shadow: 0 0 0 rgba(37, 99, 235, 0.7);
+  }
+}
+
+.logo-animation {
+  position: relative;
+  display: inline-block;
+  text-decoration: none;
+  animation: professionalPulse 3s ease-in-out infinite;
+}
+
+.logo-animation::before {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, white, transparent);
+  transform: scaleX(0.8);
+  opacity: 0.7;
+  transition: all 0.3s ease;
+}
+>>>>>>> 3e46983ae0b11c029df7af85aa9bf967de214c2e
+
+/* Add these styles to index.css */
+@keyframes professionalPulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+    text-shadow: 0 0 0 rgba(37, 99, 235, 0.7);
+  }
+  50% {
+    transform: scale(1.03);
+    opacity: 0.9;
+    text-shadow: 0 0 8px rgba(37, 99, 235, 0.4);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+    text-shadow: 0 0 0 rgba(37, 99, 235, 0.7);
+  }
+}
+
+.logo-animation {
+  position: relative;
+  display: inline-block;
+  text-decoration: none;
+  animation: professionalPulse 3s ease-in-out infinite;
+}
+
+.logo-animation::before {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, white, transparent);
+  transform: scaleX(0.8);
+  opacity: 0.7;
+  transition: all 0.3s ease;
+}
+<<<<<<< HEAD
 
 /* Add these styles to index.css */
 @keyframes professionalPulse {
@@ -107,43 +191,5 @@ button:focus-visible {
   opacity: 0.7;
   transition: all 0.3s ease;
 }
-
-/* Add these styles to index.css */
-@keyframes professionalPulse {
-  0% {
-    transform: scale(1);
-    opacity: 1;
-    text-shadow: 0 0 0 rgba(37, 99, 235, 0.7);
-  }
-  50% {
-    transform: scale(1.03);
-    opacity: 0.9;
-    text-shadow: 0 0 8px rgba(37, 99, 235, 0.4);
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-    text-shadow: 0 0 0 rgba(37, 99, 235, 0.7);
-  }
-}
-
-.logo-animation {
-  position: relative;
-  display: inline-block;
-  color: #2563eb;
-  text-decoration: none;
-  animation: professionalPulse 3s ease-in-out infinite;
-}
-
-.logo-animation::before {
-  content: "";
-  position: absolute;
-  bottom: -2px;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, #2563eb, transparent);
-  transform: scaleX(0.8);
-  opacity: 0.7;
-  transition: all 0.3s ease;
-}
+=======
+>>>>>>> 3e46983ae0b11c029df7af85aa9bf967de214c2e

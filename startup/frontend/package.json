@@ -20,7 +20,12 @@
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-router-dom": "^7.6.3",
+<<<<<<< HEAD
     "tailwind-scrollbar-hide": "^4.0.0"
+=======
+    "react-typed": "^2.0.12",
+    "tailwindcss": "^4.1.11"
+>>>>>>> 3e46983ae0b11c029df7af85aa9bf967de214c2e
   },
   "devDependencies": {
     "@eslint/js": "^9.29.0",
