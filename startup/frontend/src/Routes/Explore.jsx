@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { ReactTyped } from 'react-typed';
+import { ReactTyped } from "react-typed";
+import { ArrowRight } from "lucide-react";
 
 // A utility component for the glowing effect, makes the code cleaner
 const Glow = () => (
@@ -64,7 +65,7 @@ const Home = () => {
   const scrollContainerRef = useRef(null);
   const intervalRef = useRef(null);
   const [isHovering, setIsHovering] = useState(false);
-  const words = ['Connecting', 'Linking', 'Uniting', 'Matching'];
+  const words = ["Connecting", "Linking", "Uniting", "Matching"];
 
   useEffect(() => {
     const scrollContainer = scrollContainerRef.current;
@@ -133,12 +134,16 @@ const Home = () => {
               backSpeed={50}
               backDelay={1000}
               loop={true}
-              className='typewriter'
+              className="typewriter"
             />
-            <span className='static-text'> Startups with the Right Investors</span>
+            <span className="static-text">
+              {" "}
+              Startups with the Right Investors
+            </span>
           </h1>
           <p className="text-xl md:text-2xl text-slate-400 max-w-3xl mx-auto mb-12 font-inter leading-relaxed animate-fadeInDown">
-            AI-driven matchmaking platform that helps innovative startups find investors who believe in their vision.
+            AI-driven matchmaking platform that helps innovative startups find
+            investors who believe in their vision.
           </p>
 
           <div className="flex flex-col md:flex-row gap-6 justify-center">
@@ -168,7 +173,8 @@ const Home = () => {
             Success Stories
           </h2>
           <p className="text-lg text-slate-400 max-w-2xl mx-auto">
-            See the innovative ventures that have recently secured funding through PitchPort.
+            See the innovative ventures that have recently secured funding
+            through PitchPort.
           </p>
         </div>
 
@@ -186,20 +192,36 @@ const Home = () => {
             {[...fundedStartups].map((startup, index) => (
               <div
                 key={`${startup.id}-${index}`}
-                className="startup-card flex-none w-110 p-8 bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/80 transition-all duration-300 flex flex-col items-center text-center hover:bg-slate-700/50 hover:border-cyan-400/50 hover:-translate-y-2"
+                className="group startup-card flex-none w-[400px] p-6 bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/80 transition-all duration-300 hover:bg-slate-700/50 hover:border-cyan-400/50 hover:-translate-y-2 flex flex-col"
               >
-                <img
-                  src={startup.logo}
-                  alt={`${startup.name} Logo`}
-                  className="w-24 h-24 rounded-full mb-6 object-cover border-2 border-slate-700"
-                />
-                <h3 className="text-2xl font-bold text-white mb-2 font-poppins">
-                  {startup.name}
-                </h3>
-                <p className="text-md text-slate-300 mb-1 leading-relaxed">
-                  {startup.description}
-                </p>
-                <p className="text-sm text-slate-500">{startup.investor}</p>
+                <div className="flex items-center gap-5 mb-4">
+                  <div className="relative w-20 h-20 flex-shrink-0">
+                    <div className="absolute -inset-0.5 rounded-full bg-gradient-to-r from-purple-600 to-cyan-500 opacity-0 group-hover:opacity-100 transition duration-300 blur-sm"></div>
+                    <img
+                      src={startup.logo}
+                      alt={`${startup.name} Logo`}
+                      className="relative w-full h-full rounded-full object-cover border-2 border-slate-700"
+                    />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-white font-poppins truncate">
+                      {startup.name}
+                    </h3>
+                    <p className="text-sm text-slate-400">{startup.investor}</p>
+                  </div>
+                </div>
+                <div className="flex-grow">
+                  <p className="text-lg text-slate-300 leading-relaxed mb-4">
+                    {startup.description}
+                  </p>
+                </div>
+                <Link
+                  to={`/startup/${startup.id}`}
+                  className="mt-auto text-cyan-400 font-semibold text-sm flex items-center gap-2 group-hover:text-cyan-300 transition-colors"
+                >
+                  View Details
+                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                </Link>
               </div>
             ))}
           </div>

@@ -1,44 +1,80 @@
 import React from "react";
-import { Link, Outlet, useLocation } from "react-router-dom";
-const Settings = () => {
-  const location = useLocation();
-  const activeTab = location.pathname.split("/").pop();
-  return (
-    <>
-      <div className="left w-70 h-screen  flex flex-col gap-2 p-10 pt-30 justify-between bg-blue-50 pb-20">
-        <p className="text-3xl font-semibold">Settings</p>
-        <div className="h-full flex flex-col gap-3 pt-10 text-[1.3rem] p ">
-          <Link to="/settings/profile" className="cursor-pointer">
-            <span
-              className={`text-black font-bold ${
-                activeTab === "profile" ? "text-gray-800" : "text-gray-600"
-              }`}
-            >
-              Profile
-            </span>
-          </Link>
+import { NavLink, Outlet } from "react-router-dom";
+import {
+  User,
+  Shield,
+  Bell,
+  CreditCard,
+  LogOut,
+  Settings as SettingsIcon,
+} from "lucide-react";
 
-          <Link to="/settings/dashboard" className="cursor-pointer">
-            <span
-              className={`text-black font-bold ${
-                activeTab === "dashboard" ? "text-gray-800" : "text-gray-600"
-              }`}
-            >
-              Dashboard
-            </span>
-          </Link>
+const Settings = () => {
+  return (
+    <div className="min-h-screen flex bg-[#0D1117] text-slate-300 font-inter">
+      {/* Sidebar Navigation */}
+      <aside className="w-64 flex-shrink-0 bg-slate-900/80 backdrop-blur-sm border-r border-slate-800 flex flex-col p-6">
+        <div className="flex items-center gap-3 mb-10">
+          <SettingsIcon className="w-7 h-7 text-cyan-400" />
+          <h1 className="text-2xl font-bold text-white font-poppins">
+            Settings
+          </h1>
         </div>
-        <Link
-          to="/"
-          className=" !text-red-500 hover:cursor-pointer text-[1.3rem] "
-        >
-          Log out
-        </Link>
-      </div>
-      <div className="right h-full w-full">
+
+        <nav className="flex flex-col space-y-2">
+          <SettingsLink to="/settings/profile" icon={<User />}>
+            Profile
+          </SettingsLink>
+          <SettingsLink to="/settings/dashboard" icon={<User />}>
+            Dashboard
+          </SettingsLink>
+          <SettingsLink to="/settings/security" icon={<Shield />}>
+            Security
+          </SettingsLink>
+          <SettingsLink to="/settings/notifications" icon={<Bell />}>
+            Notifications
+          </SettingsLink>
+          <SettingsLink to="/settings/billing" icon={<CreditCard />}>
+            Billing
+          </SettingsLink>
+        </nav>
+
+        <div className="mt-auto">
+          <NavLink
+            to="/logout" // Assuming you have a route that handles logout
+            className="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:bg-red-500/10 hover:text-red-400 transition-colors"
+          >
+            <LogOut className="w-5 h-5" />
+            <span className="font-semibold">Log Out</span>
+          </NavLink>
+        </div>
+      </aside>
+
+      {/* Main Content Area */}
+      <main className="flex-1 p-6 sm:p-8 md:p-10">
+        {/* The Outlet will render the component for the active nested route */}
         <Outlet />
-      </div>
-    </>
+      </main>
+    </div>
+  );
+};
+
+// A reusable NavLink component for the settings sidebar to keep the code clean
+const SettingsLink = ({ to, icon, children }) => {
+  return (
+    <NavLink
+      to={to}
+      className={({ isActive }) =>
+        `flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-base ${
+          isActive
+            ? "bg-cyan-500/10 text-cyan-400 font-semibold"
+            : "text-slate-400 hover:bg-slate-700/50 hover:text-slate-200"
+        }`
+      }
+    >
+      {React.cloneElement(icon, { className: "w-5 h-5" })}
+      <span>{children}</span>
+    </NavLink>
   );
 };
 

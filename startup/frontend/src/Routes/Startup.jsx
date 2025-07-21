@@ -1,305 +1,443 @@
-import React, { useState, useContext, useEffect } from "react";
-import { Briefcase, MapPin, Lightbulb, LinkIcon } from "lucide-react";
-import { AuthContext } from "../contexts/auth-context";
-import axios from "axios";
+import React, { useState, useMemo } from "react";
+import { Link } from "react-router-dom";
+import {
+  Search,
+  Briefcase,
+  MapPin,
+  DollarSign,
+  ChevronDown,
+  X,
+  PlusCircle,
+} from "lucide-react";
+
+// --- DUMMY DATA ---
+const allStartups = [
+  {
+    id: 1,
+    name: "InnovateX",
+    industry: "FinTech",
+    location: "Bengaluru",
+    fundingStage: "Series A",
+    fundingAmount: 2500000,
+    summary: "AI-driven platform for personal finance management.",
+  },
+  {
+    id: 2,
+    name: "GreenEnergy Co.",
+    industry: "ClimateTech",
+    location: "New Delhi",
+    fundingStage: "Seed",
+    fundingAmount: 500000,
+    summary: "Developing next-gen solar panel technology.",
+  },
+  {
+    id: 3,
+    name: "HealthConnect AI",
+    industry: "HealthTech",
+    location: "Mumbai",
+    fundingStage: "Series B",
+    fundingAmount: 10000000,
+    summary: "Connecting patients with doctors via telemedicine.",
+  },
+  {
+    id: 4,
+    name: "CarbonCraft",
+    industry: "ClimateTech",
+    location: "Bengaluru",
+    fundingStage: "Pre-Seed",
+    fundingAmount: 150000,
+    summary: "Creating building materials from captured carbon.",
+  },
+  {
+    id: 5,
+    name: "DataDrive",
+    industry: "SaaS",
+    location: "Pune",
+    fundingStage: "Seed",
+    fundingAmount: 750000,
+    summary: "Cloud-based data analytics for small businesses.",
+  },
+  {
+    id: 6,
+    name: "Groww",
+    industry: "FinTech",
+    location: "Bengaluru",
+    fundingStage: "Series E",
+    fundingAmount: 393000000,
+    summary: "User-friendly platform for stocks and mutual funds.",
+  },
+  {
+    id: 7,
+    name: "Licious",
+    industry: "FoodTech",
+    location: "Bengaluru",
+    fundingStage: "Series F",
+    fundingAmount: 490000000,
+    summary: "Online delivery of fresh meat and seafood.",
+  },
+  {
+    id: 8,
+    name: "CureBay",
+    industry: "HealthTech",
+    location: "Bhubaneswar",
+    fundingStage: "Seed",
+    fundingAmount: 6000000,
+    summary: "Hybrid healthcare for rural India.",
+  },
+  {
+    id: 9,
+    name: "SynthWave Labs",
+    industry: "SaaS",
+    location: "Mumbai",
+    fundingStage: "Series A",
+    fundingAmount: 3000000,
+    summary: "AI-powered music composition tools for creators.",
+  },
+];
+
+const industries = [...new Set(allStartups.map((s) => s.industry))];
+const locations = [...new Set(allStartups.map((s) => s.location))];
+const fundingStages = [
+  "Pre-Seed",
+  "Seed",
+  "Series A",
+  "Series B",
+  "Series C",
+  "Series D",
+  "Series E",
+  "Series F",
+];
+
+// --- HELPER COMPONENTS ---
+
+const FilterSection = ({ title, children }) => {
+  const [isOpen, setIsOpen] = useState(true);
+  return (
+    <div className="py-4 border-b border-slate-700/50">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex justify-between items-center text-left"
+      >
+        <h3 className="font-semibold text-white">{title}</h3>
+        <ChevronDown
+          className={`w-5 h-5 text-slate-400 transition-transform ${
+            isOpen ? "rotate-180" : ""
+          }`}
+        />
+      </button>
+      {isOpen && <div className="mt-4 space-y-2">{children}</div>}
+    </div>
+  );
+};
+
+const Checkbox = ({ id, label, checked, onChange }) => (
+  <label htmlFor={id} className="flex items-center space-x-3 cursor-pointer">
+    <input
+      id={id}
+      type="checkbox"
+      checked={checked}
+      onChange={onChange}
+      className="h-4 w-4 rounded bg-slate-700 border-slate-600 text-cyan-500 focus:ring-cyan-600 focus:ring-offset-slate-800"
+    />
+    <span className="text-slate-300">{label}</span>
+  </label>
+);
+
+// --- MAIN STARTUP PAGE COMPONENT ---
 
 const Startup = () => {
-  const demoStartupList = [
-    {
-      name: "Cred",
-      industry: "FinTech(Credit-Centric Financial Services",
-      location: "Bengaluru, India",
-      idea: "Fintech platform that rewards creditworthy users for timely bill payments with exclusive financial and lifestyle benefits.",
-      funding: "$72M",
-      traction:
-        "13+ million monthly active users, managing 22% of India's credit-card market.",
-    },
-    {
-      name: "CarbonCraft",
-      industry: "Climate & Sustainability",
-      location: "Bengaluru, India",
-      idea: "Tiles made from captured CO₂ and waste materials. ",
-      funding: "$149K",
-      traction: "Deployment in 8 cities, including 13 installations. ",
-    },
-    {
-      name: "Groww",
-      industry: "FinTech / WealthTech--Online investments & stockbroking",
-      location: "Bengaluru, India",
-      idea: "A user-friendly investing platform enabling Indians to invest in mutual funds, stocks, IPOs, digital gold and more.",
-      funding: "$393M",
-      traction: "~ 13M active clients.",
-    },
-    {
-      name: "Anveshan",
-      industry: "Food-Tech",
-      location: "Bengaluru, India",
-      idea: "It is a farm-to-kitchen food-tech startup that sources traditionally crafted, minimally processed foods directly from rural micro-entrepreneurs.",
-      funding: "$5.8M",
-      traction: "Achieved and surpassed a $12M net revenue run rate.",
-    },
-    {
-      name: "Licious",
-      industry: "Food-tech / Quick-commerce (fresh meat & seafood)",
-      location: "Bengaluru, India",
-      idea: "Delivering fresh, ready-to-cook meats and seafood with a fully integrated supply chain.",
-      funding: "$490M",
-      traction:
-        "Operates in 20+ Indian cities, sells via own app and partners like Swiggy Instamart and Blinkit; narrowed FY24 losses but revenue fell to ₹687 Cr (~$82 M)",
-    },
-    {
-      name: "Tata 1mg",
-      industry: "HealthTech / E-pharmacy & diagnostics",
-      location: "Gurugram, India",
-      idea: "India's leading digital healthcare platform offering medicine delivery, lab tests, e-consults, and health content.",
-      funding: "$231M",
-      traction:
-        "FY24 revenue ₹1,990 Cr ($240 M, +22% YoY); cut losses by ~75% in FY24; holds ~31% market share, overtaking PharmEasy",
-    },
-    {
-      name: "Indian Angel Network (IAN)",
-      industry: "Angel investment network",
-      location: "New Delhi, India",
-      idea: "A mentor-led network of experienced founders investing early in innovative startups across sectors.",
-      funding: "$108M",
-      traction:
-        " Active since 2006; 450+ members from 11 countries; portfolio includes scaleups like PregBuddy and SuperProfs",
-    },
-    {
-      name: "CureBay",
-      industry:
-        "HealthTech-Hybrid healthcare platform (telemedicine + micro-clinics in rural India)",
-      location: "Bhubaneswar, India",
-      idea: "Bridging gaps in rural healthcare by offering AI-enabled, last-mile teleconsultations and local clinic services.",
-      funding: "$35.5M",
-      traction: "~90,000 active users, >60% program renewal rate",
-    },
-  ];
+  const [filters, setFilters] = useState({
+    industry: [],
+    location: [],
+    fundingStage: [],
+  });
+  const [searchTerm, setSearchTerm] = useState("");
   const [showForm, setShowForm] = useState(false);
-  const [expandedCard, setExpandedCard] = useState(null);
-  const [showAlert, setShowAlert] = useState(false);
-  const [startupList, setStartupList] = useState(demoStartupList);
-  const { isLoggedIn } = useContext(AuthContext);
 
-  const addStartupData = async () => {
-    try {
-      await axios.post("http://localhost:5000/addstartup", formData, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-    } catch (error) {
-      console.log(error);
-    }
+  const handleFilterChange = (category, value) => {
+    setFilters((prev) => {
+      const newValues = prev[category].includes(value)
+        ? prev[category].filter((item) => item !== value)
+        : [...prev[category], value];
+      return { ...prev, [category]: newValues };
+    });
   };
 
-  const showStartups = async () => {
-    const startups = await axios.get("http://localhost:5000/startups");
-    const startupsData = startups.data;
-    if (startupsData.length > 0) {
-      setStartupList(startupsData);
-    }
-  };
+  const filteredStartups = useMemo(() => {
+    return allStartups.filter((startup) => {
+      const searchMatch = startup.name
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
+      const industryMatch =
+        filters.industry.length === 0 ||
+        filters.industry.includes(startup.industry);
+      const locationMatch =
+        filters.location.length === 0 ||
+        filters.location.includes(startup.location);
+      const fundingStageMatch =
+        filters.fundingStage.length === 0 ||
+        filters.fundingStage.includes(startup.fundingStage);
+      return searchMatch && industryMatch && locationMatch && fundingStageMatch;
+    });
+  }, [filters, searchTerm]);
 
-  useEffect(() => {
-    showStartups();
-  });
-
-  const [formData, setFormData] = useState({
-    startupName: "",
-    industry: "",
-    location: "",
-    idea: "",
-    funding: "",
-    team: "",
-    traction: "",
-    email: "",
-  });
-
-  const handleChange = (e) =>
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    setShowForm(false);
-  };
+  // This would be in your AuthContext
+  const { isLoggedIn } = { isLoggedIn: true };
 
   return (
-    <div className="min-h-screen px-4 py-10 max-w-6xl mx-auto font-sans  text-gray-800">
-      <h2 className="text-4xl font-extrabold text-center mb-10 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
-        🌱 Explore Innovative Startups
-      </h2>
-
-      <div className="grid items-start sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {startupList.map((startup, index) => (
-          <div
-            key={index}
-            onClick={() =>
-              setExpandedCard(index === expandedCard ? null : index)
-            }
-            className="bg-white shadow-xl rounded-2xl p-6 cursor-pointer border border-gray-200 transition-all hover:shadow-2xl group relative overflow-hidden"
-          >
-            <h3 className="text-xl font-semibold text-gray-800 flex justify-between items-center">
-              {startup.name}
-              <span className="text-sm text-blue-600 group-hover:underline">
-                {expandedCard === index ? "Close" : "Details"}
-              </span>
-            </h3>
-            <p className="flex items-center text-sm text-gray-500 mt-1">
-              <MapPin className="w-4 h-4 mr-1" /> {startup.location}
-            </p>
-            <p className="text-sm text-gray-600 italic mt-2">
-              {startup.industry}
-            </p>
-            {expandedCard === index && (
-              <div className="mt-4 space-y-2 text-sm transition-all duration-300 ease-in-out">
-                <p className="flex items-center">
-                  <Lightbulb className="w-4 h-4 mr-1" /> <strong>Idea:</strong>{" "}
-                  {startup.idea}
-                </p>
-                <p className="flex items-center">
-                  <Briefcase className="w-4 h-4 mr-1" />{" "}
-                  <strong>Funding:</strong> {startup.funding}
-                </p>
-                <p>
-                  <strong>Traction:</strong> {startup.traction}
-                </p>
-              </div>
-            )}
+    <div className="min-h-screen bg-[#0D1117] text-slate-300 font-inter">
+      {/* Header */}
+      <div className="bg-slate-900/80 backdrop-blur-sm border-b border-slate-800 py-10 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto text-center">
+          <h1 className="text-4xl md:text-5xl font-extrabold text-white font-poppins mb-4">
+            Explore Opportunities
+          </h1>
+          <p className="text-lg text-slate-400 max-w-2xl mx-auto mb-8">
+            Discover and connect with the next generation of innovative
+            startups.
+          </p>
+          <div className="relative max-w-2xl mx-auto">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500" />
+            <input
+              type="text"
+              placeholder="Search by startup name..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full bg-slate-800 border border-slate-700 rounded-full py-3 pl-12 pr-4 text-slate-300 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
+            />
           </div>
-        ))}
+        </div>
       </div>
 
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
+          {/* Filters Sidebar */}
+          <aside className="lg:col-span-1 lg:sticky lg:top-24 bg-slate-800/50 backdrop-blur-sm border border-slate-700/80 rounded-2xl p-6">
+            <h2 className="text-xl font-bold text-white mb-4">Filters</h2>
+            <FilterSection title="Industry">
+              {industries.map((industry) => (
+                <Checkbox
+                  key={industry}
+                  id={`industry-${industry}`}
+                  label={industry}
+                  checked={filters.industry.includes(industry)}
+                  onChange={() => handleFilterChange("industry", industry)}
+                />
+              ))}
+            </FilterSection>
+            <FilterSection title="Location">
+              {locations.map((location) => (
+                <Checkbox
+                  key={location}
+                  id={`location-${location}`}
+                  label={location}
+                  checked={filters.location.includes(location)}
+                  onChange={() => handleFilterChange("location", location)}
+                />
+              ))}
+            </FilterSection>
+            <FilterSection title="Funding Stage">
+              {fundingStages.map((stage) => (
+                <Checkbox
+                  key={stage}
+                  id={`stage-${stage}`}
+                  label={stage}
+                  checked={filters.fundingStage.includes(stage)}
+                  onChange={() => handleFilterChange("fundingStage", stage)}
+                />
+              ))}
+            </FilterSection>
+          </aside>
+
+          {/* Startups Grid */}
+          <main className="lg:col-span-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {filteredStartups.length > 0 ? (
+                filteredStartups.map((startup) => (
+                  <div
+                    key={startup.id}
+                    className="group bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/80 p-6 transition-all duration-300 hover:bg-slate-700/50 hover:border-cyan-400/50 hover:-translate-y-1"
+                  >
+                    <div className="flex items-start gap-4 mb-4">
+                      <img
+                        src={`https://logo.clearbit.com/${startup.name
+                          .toLowerCase()
+                          .replace(/\s/g, "")}.com`}
+                        alt={`${startup.name} Logo`}
+                        className="w-16 h-16 rounded-lg bg-slate-700 object-contain p-1"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src =
+                            "https://placehold.co/64x64/1e293b/94a3b8?text=" +
+                            startup.name.charAt(0);
+                        }}
+                      />
+                      <div>
+                        <h3 className="text-xl font-bold text-white font-poppins">
+                          {startup.name}
+                        </h3>
+                        <p className="text-sm text-slate-400">
+                          {startup.industry}
+                        </p>
+                      </div>
+                    </div>
+                    <p className="text-slate-300 mb-4 h-12">
+                      {startup.summary}
+                    </p>
+                    <div className="text-xs text-slate-400 space-y-2">
+                      <p className="flex items-center">
+                        <MapPin className="w-3.5 h-3.5 mr-2 text-cyan-400" />{" "}
+                        {startup.location}
+                      </p>
+                      <p className="flex items-center">
+                        <DollarSign className="w-3.5 h-3.5 mr-2 text-cyan-400" />{" "}
+                        ${startup.fundingAmount.toLocaleString()} (
+                        {startup.fundingStage})
+                      </p>
+                    </div>
+                    <Link
+                      to={`/startup/${startup.id}`}
+                      className="mt-6 block w-full text-center bg-slate-700/80 text-cyan-400 font-semibold py-2 rounded-lg hover:bg-slate-700 transition-colors"
+                    >
+                      View Pitch
+                    </Link>
+                  </div>
+                ))
+              ) : (
+                <div className="md:col-span-2 text-center py-16">
+                  <p className="text-slate-400 text-lg">
+                    No startups match your criteria.
+                  </p>
+                </div>
+              )}
+            </div>
+          </main>
+        </div>
+      </div>
+
+      {/* Submit Startup Button */}
       <button
         onClick={() => {
           if (isLoggedIn) {
             setShowForm(true);
           } else {
-            setShowAlert(true);
+            // Replace with a proper modal alert if you have one
+            alert("You need to be logged in to submit a startup.");
           }
         }}
-        className="fixed bottom-6 right-6 px-6 py-3 rounded-full bg-white/30 backdrop-blur-md border border-white/40 text-blue-700 font-bold shadow-lg hover:scale-105 transition transform hover:bg-white z-50"
+        className="fixed bottom-6 right-6 flex items-center gap-2 px-5 py-3 rounded-full bg-cyan-400 text-white font-bold shadow-lg shadow-cyan-500/20 hover:scale-105 hover:bg-cyan-300 transition-all transform z-50"
       >
-        + Submit Startup
+        <PlusCircle className="w-5 h-5" />
+        Submit Startup
       </button>
 
-      {/* Alert */}
-      {showAlert && (
-        <div className="fixed inset-0 flex items-center justify-center z-50">
-          <Alert severity="error" onClose={() => setShowAlert(false)}>
-            <AlertTitle>Error</AlertTitle>
-            You need to be logged in to become an investor.
-          </Alert>
-        </div>
-      )}
+      {/* Submit Form Modal */}
+      {showForm && <SubmitStartupForm onClose={() => setShowForm(false)} />}
+    </div>
+  );
+};
 
-      {showForm && (
-        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center px-4 animate-fade-in">
-          <div className="bg-white rounded-xl p-8 w-full max-w-3xl shadow-2xl animate-slide-up relative">
-            <button
-              onClick={() => setShowForm(false)}
-              className="absolute top-3 right-4 text-gray-400 hover:text-red-500 text-2xl"
-            >
-              &times;
-            </button>
-            <h2 className="text-3xl font-bold text-blue-700 mb-6">
-              Submit Your Startup
-            </h2>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid md:grid-cols-2 gap-6">
-                <input
-                  type="text"
-                  name="startupName"
-                  placeholder="Startup Name"
-                  value={formData.startupName}
-                  onChange={handleChange}
-                  required
-                  className="input"
-                />
-                <input
-                  type="text"
-                  name="industry"
-                  placeholder="Industry"
-                  value={formData.industry}
-                  onChange={handleChange}
-                  required
-                  className="input"
-                />
-              </div>
-              <div className="grid md:grid-cols-2 gap-6">
-                <input
-                  type="text"
-                  name="location"
-                  placeholder="Location"
-                  value={formData.location}
-                  onChange={handleChange}
-                  className="input"
-                  required
-                />
-                <input
-                  type="email"
-                  name="email"
-                  placeholder="Email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="input"
-                />
-              </div>
-              <textarea
-                name="idea"
-                placeholder="Startup Idea"
-                value={formData.idea}
-                onChange={handleChange}
-                rows="3"
-                className="input"
-                required
-              />
-              <input
-                type="text"
-                name="fundingNeeded"
-                placeholder="Funding Needed"
-                value={formData.fundingNeeded}
-                onChange={handleChange}
-                className="input"
-                required
-              />
-              <textarea
-                name="team"
-                placeholder="Team Info"
-                value={formData.team}
-                onChange={handleChange}
-                rows="2"
-                className="input"
-                required
-              />
-              <textarea
-                name="traction"
-                placeholder="Traction / Achievements"
-                value={formData.traction}
-                onChange={handleChange}
-                rows="2"
-                className="input"
-              />
-              <div className="text-right">
-                <button
-                  onClick={addStartupData}
-                  type="submit"
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg shadow-md transition"
-                >
-                  Submit
-                </button>
-              </div>
-            </form>
+// --- SUBMIT STARTUP FORM COMPONENT (Modal) ---
+
+const SubmitStartupForm = ({ onClose }) => {
+  // Form logic would go here
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // Handle form submission logic
+    console.log("Form submitted");
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 animate-fadeIn">
+      <div className="bg-slate-800/80 backdrop-blur-lg border border-slate-700 rounded-2xl p-8 w-full max-w-3xl shadow-2xl shadow-black/20 animate-slideUp relative">
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-slate-500 hover:text-red-400"
+        >
+          <X className="w-6 h-6" />
+        </button>
+        <h2 className="text-3xl font-bold text-white mb-6 font-poppins">
+          Submit Your Startup
+        </h2>
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div className="grid md:grid-cols-2 gap-5">
+            <input
+              type="text"
+              name="startupName"
+              placeholder="Startup Name"
+              required
+              className="input-field"
+            />
+            <input
+              type="text"
+              name="industry"
+              placeholder="Industry"
+              required
+              className="input-field"
+            />
           </div>
-        </div>
-      )}
-
+          <div className="grid md:grid-cols-2 gap-5">
+            <input
+              type="text"
+              name="location"
+              placeholder="Location (e.g., Bengaluru, India)"
+              required
+              className="input-field"
+            />
+            <input
+              type="email"
+              name="email"
+              placeholder="Contact Email"
+              required
+              className="input-field"
+            />
+          </div>
+          <textarea
+            name="idea"
+            placeholder="Describe your startup's core idea..."
+            rows="3"
+            required
+            className="input-field"
+          />
+          <div className="grid md:grid-cols-2 gap-5">
+            <input
+              type="text"
+              name="fundingStage"
+              placeholder="Current Funding Stage (e.g., Seed)"
+              required
+              className="input-field"
+            />
+            <input
+              type="number"
+              name="fundingNeeded"
+              placeholder="Funding Amount Needed ($)"
+              required
+              className="input-field"
+            />
+          </div>
+          <textarea
+            name="team"
+            placeholder="Tell us about your team..."
+            rows="2"
+            className="input-field"
+          />
+          <div className="text-right pt-4">
+            <button
+              type="submit"
+              className="bg-cyan-400 hover:bg-cyan-300 text-slate-900 font-bold px-8 py-2.5 rounded-lg shadow-md transition-colors"
+            >
+              Submit for Review
+            </button>
+          </div>
+        </form>
+      </div>
       <style jsx>{`
-        .input {
-          @apply w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none;
+        .input-field {
+          @apply w-full bg-slate-800 border border-slate-700 rounded-lg py-2.5 px-4 text-slate-300 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500;
         }
-        @keyframes slide-up {
+        @keyframes slideUp {
           from {
             opacity: 0;
             transform: translateY(30px);
@@ -309,10 +447,10 @@ const Startup = () => {
             transform: translateY(0);
           }
         }
-        .animate-slide-up {
-          animation: slide-up 0.4s ease-out forwards;
+        .animate-slideUp {
+          animation: slideUp 0.4s ease-out forwards;
         }
-        @keyframes fade-in {
+        @keyframes fadeIn {
           from {
             opacity: 0;
           }
@@ -320,8 +458,8 @@ const Startup = () => {
             opacity: 1;
           }
         }
-        .animate-fade-in {
-          animation: fade-in 0.3s ease-in;
+        .animate-fadeIn {
+          animation: fadeIn 0.3s ease-in forwards;
         }
       `}</style>
     </div>

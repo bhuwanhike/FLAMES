@@ -1,301 +1,426 @@
-import React, { useEffect, useState, useContext } from "react";
-import { Alert, AlertTitle } from "@mui/material";
-import { Briefcase, MapPin } from "lucide-react";
-import axios from "axios";
-import { AuthContext } from "../contexts/auth-context";
+import React, { useState, useMemo } from "react";
+import { Link } from "react-router-dom";
+import {
+  Search,
+  Briefcase,
+  MapPin,
+  DollarSign,
+  ChevronDown,
+  X,
+  PlusCircle,
+  Linkedin,
+  Twitter,
+  Globe,
+} from "lucide-react";
+
+// --- DUMMY DATA ---
+const allInvestors = [
+  {
+    id: 1,
+    name: "Kunal Shah",
+    location: "Mumbai",
+    industryFocus: ["FinTech", "SaaS", "Consumer"],
+    investmentStage: ["Seed", "Series A"],
+    bio: "Founder of CRED. Passionate about building high-trust ecosystems and backing disruptive ideas in tech.",
+    notableInvestments: ["Razorpay", "Meesho", "Unacademy"],
+    socials: { linkedin: "#", twitter: "#", website: "#" },
+  },
+  {
+    id: 2,
+    name: "Anupam Mittal",
+    location: "Mumbai",
+    industryFocus: ["Consumer", "HealthTech", "FinTech"],
+    investmentStage: ["Pre-Seed", "Seed"],
+    bio: "Founder of People Group (Shaadi.com). Early-stage investor focused on scalable consumer internet businesses.",
+    notableInvestments: ["Ola Cabs", "Druva", "Whatfix"],
+    socials: { linkedin: "#", twitter: "#", website: "#" },
+  },
+  {
+    id: 3,
+    name: "Rajan Anandan",
+    location: "Bengaluru",
+    industryFocus: ["SaaS", "AI", "HealthTech"],
+    investmentStage: ["Pre-Seed", "Seed", "Series A"],
+    bio: "Managing Director at Sequoia Capital. Formerly at Google. Deep expertise in scaling technology companies in India.",
+    notableInvestments: ["Dunzo", "Practo", "OYO"],
+    socials: { linkedin: "#", twitter: "#", website: "#" },
+  },
+  {
+    id: 4,
+    name: "Binny Bansal",
+    location: "Bengaluru",
+    industryFocus: ["E-commerce", "Logistics", "SaaS"],
+    investmentStage: ["Seed", "Series A", "Series B"],
+    bio: "Co-founder of Flipkart. Now investing in and mentoring the next wave of entrepreneurs through 021 Capital.",
+    notableInvestments: ["Acko", "Cure.fit", "Rupeek"],
+    socials: { linkedin: "#", twitter: "#", website: "#" },
+  },
+  {
+    id: 5,
+    name: "Vani Kola",
+    location: "Bengaluru",
+    industryFocus: ["FinTech", "HealthTech", "Consumer"],
+    investmentStage: ["Seed", "Series A"],
+    bio: "Managing Director at Kalaari Capital. A visionary investor known for identifying and nurturing category-defining companies.",
+    notableInvestments: ["Myntra", "Dream11", "Urban Ladder"],
+    socials: { linkedin: "#", twitter: "#", website: "#" },
+  },
+  {
+    id: 6,
+    name: "Girish Mathrubootham",
+    location: "Chennai",
+    industryFocus: ["SaaS", "DeepTech"],
+    investmentStage: ["Pre-Seed", "Seed"],
+    bio: "Founder of Freshworks. Actively invests in and mentors early-stage SaaS founders from India building for the world.",
+    notableInvestments: ["Chargebee", "Kissflow", "Whatfix"],
+    socials: { linkedin: "#", twitter: "#", website: "#" },
+  },
+];
+
+const industryOptions = [
+  ...new Set(allInvestors.flatMap((i) => i.industryFocus)),
+];
+const locationOptions = [...new Set(allInvestors.map((i) => i.location))];
+const stageOptions = [
+  ...new Set(allInvestors.flatMap((i) => i.investmentStage)),
+];
+
+// --- HELPER COMPONENTS ---
+
+const FilterSection = ({ title, children }) => {
+  const [isOpen, setIsOpen] = useState(true);
+  return (
+    <div className="py-4 border-b border-slate-700/50">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex justify-between items-center text-left"
+      >
+        <h3 className="font-semibold text-white">{title}</h3>
+        <ChevronDown
+          className={`w-5 h-5 text-slate-400 transition-transform ${
+            isOpen ? "rotate-180" : ""
+          }`}
+        />
+      </button>
+      {isOpen && <div className="mt-4 space-y-2">{children}</div>}
+    </div>
+  );
+};
+
+const Checkbox = ({ id, label, checked, onChange }) => (
+  <label htmlFor={id} className="flex items-center space-x-3 cursor-pointer">
+    <input
+      id={id}
+      type="checkbox"
+      checked={checked}
+      onChange={onChange}
+      className="h-4 w-4 rounded bg-slate-700 border-slate-600 text-cyan-500 focus:ring-cyan-600 focus:ring-offset-slate-800"
+    />
+    <span className="text-slate-300">{label}</span>
+  </label>
+);
+
+// --- MAIN INVESTOR PAGE COMPONENT ---
 
 const Investor = () => {
-  const demoInvestorsList = [
-    {
-      name: "Kunal Shah",
-      location: "Mumbai, India",
-      industries: "Fintech, SaaS, Consumer Tech, EdTech",
-      stage: "Pre-Seed, Seed, Series A",
-      risk: "Medium-High",
-      portfolioSize: "$25M+",
-    },
-    {
-      name: "Anupam Mittal",
-      location: "Mumbai, India",
-      industries:
-        "Consumer Internet, E-commerce, HealthTech, FinTech, Mobility",
-      stage: "Pre-Seed, Seed, Series A",
-      risk: "Medium",
-      portfolioSize: "$25M+ (Angel Investments)",
-    },
-    {
-      name: "Kunal Bahl",
-      location: "New Delhi, India",
-      industries: "Consumer Tech, Fintech, SaaS, Mobility, Health-Tech",
-      stage:
-        "Pre-Seed, Seed, Series A (Titan Capital focuses on early-stage deals)",
-      risk: "Medium-High ",
-      portfolioSize: "Invested in 250-300+ startups",
-    },
-    {
-      name: "Rajan Anandan",
-      location: "Bengaluru, India",
-      industries:
-        "Internet, Mobile, SaaS, AI, EdTech, AgriTech, HealthTech, Mobility, Biotech",
-      stage: "Early-stage (Pre-Seed, Seed, Series A)",
-      risk: "Medium",
-      portfolioSize: "Over 70 personal investments",
-    },
-    {
-      name: "Binny Bansal",
-      location: "Bengaluru, India",
-      industries:
-        "E-commerce, Internet, HealthTech, FinTech, EdTech, Robotics, SaaS",
-      stage:
-        "Seed to Series A (also leads Series B in select deals via 3State Ventures/021 Capital)",
-      risk: "Medium-High",
-      portfolioSize: "60+ startups across 60+ funding rounds",
-    },
-    {
-      name: "Ashneer Grover",
-      location: "New Delhi / Bengaluru, India",
-      industries: "FinTech, HealthTech, Consumer Tech, SaaS, Mobility, EdTech",
-      stage: "Seed, Pre-Seed, Series A",
-      risk: "Medium-High",
-      portfolioSize: "30+ startups personally invested",
-    },
-  ];
+  const [filters, setFilters] = useState({
+    industryFocus: [],
+    location: [],
+    investmentStage: [],
+  });
+  const [searchTerm, setSearchTerm] = useState("");
   const [showForm, setShowForm] = useState(false);
-  const [showAlert, setShowAlert] = useState(false);
-  const [investorsList, setInvestorsList] = useState(demoInvestorsList);
-  const [expandedCard, setExpandedCard] = useState(
-    new Array(investorsList.length).fill(false)
-  );
-  const { isLoggedIn } = useContext(AuthContext);
 
-  const addInvestorData = async () => {
-    try {
-      await axios.post("http://localhost:5000/addinvestor", formData, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-    } catch (error) {
-      console.log(error);
-    }
+  const handleFilterChange = (category, value) => {
+    setFilters((prev) => {
+      const newValues = prev[category].includes(value)
+        ? prev[category].filter((item) => item !== value)
+        : [...prev[category], value];
+      return { ...prev, [category]: newValues };
+    });
   };
 
-  const toggleCard = (index) => {
-    setExpandedCard((prev) =>
-      prev.map((isExpanded, i) => (i === index ? !isExpanded : isExpanded))
-    );
-  };
+  const filteredInvestors = useMemo(() => {
+    return allInvestors.filter((investor) => {
+      const searchMatch = investor.name
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
+      const industryMatch =
+        filters.industryFocus.length === 0 ||
+        filters.industryFocus.some((f) => investor.industryFocus.includes(f));
+      const locationMatch =
+        filters.location.length === 0 ||
+        filters.location.includes(investor.location);
+      const stageMatch =
+        filters.investmentStage.length === 0 ||
+        filters.investmentStage.some((f) =>
+          investor.investmentStage.includes(f)
+        );
+      return searchMatch && industryMatch && locationMatch && stageMatch;
+    });
+  }, [filters, searchTerm]);
 
-  const showInvestors = async () => {
-    const investors = await axios.get("http://localhost:5000/investors");
-    const investorsData = investors.data;
-    if (investorsData.length > 0) {
-      setInvestorsList(investorsData);
-    }
-  };
-
-  useEffect(() => {
-    showInvestors();
-  });
-
-  const [formData, setFormData] = useState({
-    fullname: "",
-    email: "",
-    location: "",
-    industry: "",
-    stage: "",
-    risk: "",
-    portfolioSize: "",
-  });
-
-  const handleChange = (e) =>
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    setShowForm(false);
-  };
+  // This would be in your AuthContext
+  const { isLoggedIn } = { isLoggedIn: true };
 
   return (
-    <div className="min-h-screen px-4 py-10 max-w-6xl mx-auto font-sans bg-gradient-to-tr from-gray-100 via-white to-gray-200 text-gray-800">
-      <h2 className="text-4xl font-extrabold text-center mb-10 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
-        🚀 Discover High-Impact Investors
-      </h2>
-
-      {/* Investor Cards */}
-      <div className="grid items-start sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {investorsList.map((inv, index) => (
-          <div
-            key={index}
-            className="bg-white shadow-xl rounded-2xl p-6 cursor-pointer border border-gray-200 transition-all hover:shadow-2xl group relative overflow-hidden"
-          >
-            <h3 className="text-xl font-semibold text-gray-800 flex justify-between items-center">
-              {inv.fullname}
-              <span
-                onClick={(e) => {
-                  e.stopPropagation();
-                  toggleCard(index);
-                }}
-                id={index}
-                className="text-sm text-blue-600 group-hover:underline"
-              >
-                {expandedCard[index] ? "Close" : "View More"}
-              </span>
-            </h3>
-
-            <p className="flex items-center text-sm text-gray-500 mt-1">
-              <MapPin className="w-4 h-4 mr-1" /> {inv.location}
-            </p>
-
-            {expandedCard[index] && (
-              <div className="mt-4 space-y-2 text-sm transition-all duration-300 ease-in-out">
-                <p>
-                  <strong>Industries:</strong> {inv.industry}
-                </p>
-                <p>
-                  <strong>Stage:</strong> {inv.stage}
-                </p>
-                <p>
-                  <strong>Risk:</strong> {inv.risk}
-                </p>
-                <p className="flex items-center">
-                  <Briefcase className="w-4 h-4 mr-1" />
-                  <span>
-                    <strong>Portfolio:</strong> {inv.portfolioSize}
-                  </span>
-                </p>
-              </div>
-            )}
+    <div className="min-h-screen bg-[#0D1117] text-slate-300 font-inter">
+      {/* Header */}
+      <div className="bg-slate-900/80 backdrop-blur-sm border-b border-slate-800 py-10 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto text-center">
+          <h1 className="text-4xl md:text-5xl font-extrabold text-white font-poppins mb-4">
+            Meet the Investors
+          </h1>
+          <p className="text-lg text-slate-400 max-w-2xl mx-auto mb-8">
+            Find and connect with strategic investors ready to fuel the next big
+            thing.
+          </p>
+          <div className="relative max-w-2xl mx-auto">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500" />
+            <input
+              type="text"
+              placeholder="Search by investor name..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full bg-slate-800 border border-slate-700 rounded-full py-3 pl-12 pr-4 text-slate-300 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
+            />
           </div>
-        ))}
+        </div>
       </div>
 
-      {/* Glassy Floating Button */}
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
+          {/* Filters Sidebar */}
+          <aside className="lg:col-span-1 lg:sticky lg:top-24 bg-slate-800/50 backdrop-blur-sm border border-slate-700/80 rounded-2xl p-6">
+            <h2 className="text-xl font-bold text-white mb-4">Filters</h2>
+            <FilterSection title="Industry Focus">
+              {industryOptions.map((industry) => (
+                <Checkbox
+                  key={industry}
+                  id={`industry-${industry}`}
+                  label={industry}
+                  checked={filters.industryFocus.includes(industry)}
+                  onChange={() => handleFilterChange("industryFocus", industry)}
+                />
+              ))}
+            </FilterSection>
+            <FilterSection title="Location">
+              {locationOptions.map((location) => (
+                <Checkbox
+                  key={location}
+                  id={`location-${location}`}
+                  label={location}
+                  checked={filters.location.includes(location)}
+                  onChange={() => handleFilterChange("location", location)}
+                />
+              ))}
+            </FilterSection>
+            <FilterSection title="Investment Stage">
+              {stageOptions.map((stage) => (
+                <Checkbox
+                  key={stage}
+                  id={`stage-${stage}`}
+                  label={stage}
+                  checked={filters.investmentStage.includes(stage)}
+                  onChange={() => handleFilterChange("investmentStage", stage)}
+                />
+              ))}
+            </FilterSection>
+          </aside>
+
+          {/* Investors Grid */}
+          <main className="lg:col-span-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {filteredInvestors.length > 0 ? (
+                filteredInvestors.map((investor) => (
+                  <div
+                    key={investor.id}
+                    className="group bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/80 p-6 transition-all duration-300 hover:bg-slate-700/50 hover:border-cyan-400/50 hover:-translate-y-1 flex flex-col"
+                  >
+                    <div className="flex items-center gap-4 mb-4">
+                      <img
+                        src={`https://i.pravatar.cc/150?u=${investor.id}`}
+                        alt={`${investor.name}`}
+                        className="w-16 h-16 rounded-full bg-slate-700 object-cover border-2 border-slate-600"
+                      />
+                      <div>
+                        <h3 className="text-xl font-bold text-white font-poppins">
+                          {investor.name}
+                        </h3>
+                        <p className="text-sm text-slate-400 flex items-center">
+                          <MapPin className="w-3.5 h-3.5 mr-1.5" />
+                          {investor.location}
+                        </p>
+                      </div>
+                    </div>
+                    <p className="text-slate-300 mb-4 text-sm flex-grow">
+                      {investor.bio}
+                    </p>
+                    <div className="mb-4">
+                      <h4 className="font-semibold text-sm text-cyan-400 mb-2">
+                        Notable Investments
+                      </h4>
+                      <div className="flex flex-wrap gap-2">
+                        {investor.notableInvestments.slice(0, 3).map((inv) => (
+                          <span
+                            key={inv}
+                            className="text-xs bg-slate-700 text-slate-300 px-2 py-1 rounded-full"
+                          >
+                            {inv}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="mt-auto pt-4 border-t border-slate-700/50 flex items-center justify-between">
+                      <p className="text-xs font-semibold text-slate-400">
+                        CONNECT
+                      </p>
+                      <div className="flex items-center space-x-3">
+                        <a
+                          href={investor.socials.linkedin}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-slate-400 hover:text-cyan-400 transition-colors"
+                        >
+                          <Linkedin className="w-5 h-5" />
+                        </a>
+                        <a
+                          href={investor.socials.twitter}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-slate-400 hover:text-cyan-400 transition-colors"
+                        >
+                          <Twitter className="w-5 h-5" />
+                        </a>
+                        <a
+                          href={investor.socials.website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-slate-400 hover:text-cyan-400 transition-colors"
+                        >
+                          <Globe className="w-5 h-5" />
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="md:col-span-2 text-center py-16">
+                  <p className="text-slate-400 text-lg">
+                    No investors match your criteria.
+                  </p>
+                </div>
+              )}
+            </div>
+          </main>
+        </div>
+      </div>
+
+      {/* Become an Investor Button */}
       <button
         onClick={() => {
           if (isLoggedIn) {
             setShowForm(true);
           } else {
-            setShowAlert(true);
+            alert("You need to be logged in to become an investor.");
           }
         }}
-        className="fixed bottom-6 right-6 px-6 py-3 rounded-full bg-white/30 backdrop-blur-md border border-white/40 text-blue-700 font-bold shadow-lg hover:scale-105 transition transform hover:bg-white z-50"
+        className="fixed bottom-6 right-6 flex items-center gap-2 px-5 py-3 rounded-full bg-cyan-400 text-white font-bold shadow-lg shadow-cyan-500/20 hover:scale-105 hover:bg-cyan-300 transition-all transform z-50"
       >
-        + Become Investor
+        <PlusCircle className="w-5 h-5" />
+        Become an Investor
       </button>
 
-      {/* Alert */}
-      {showAlert && (
-        <div className="fixed inset-0 flex items-center justify-center z-50">
-          <Alert severity="error" onClose={() => setShowAlert(false)}>
-            <AlertTitle>Error</AlertTitle>
-            You need to be logged in to become an investor.
-          </Alert>
-        </div>
-      )}
+      {/* Submit Form Modal */}
+      {showForm && <SubmitInvestorForm onClose={() => setShowForm(false)} />}
+    </div>
+  );
+};
 
-      {/* Modal */}
-      {showForm && (
-        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center px-4 animate-fade-in">
-          <div className="bg-white rounded-xl p-8 w-full max-w-3xl shadow-2xl animate-slide-up relative">
-            <button
-              onClick={() => setShowForm(false)}
-              className="absolute top-3 right-4 text-gray-400 hover:text-red-500 text-2xl"
-            >
-              &times;
-            </button>
-            <h2 className="text-3xl font-bold text-blue-700 mb-6">
-              Become an Investor
-            </h2>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid md:grid-cols-2 gap-6">
-                <input
-                  type="text"
-                  name="fullname"
-                  placeholder="Full Name"
-                  value={formData.fullname}
-                  onChange={handleChange}
-                  required
-                  className="input"
-                />
-                <input
-                  type="email"
-                  name="email"
-                  placeholder="Email Address"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                  className="input"
-                />
-              </div>
-              <div className="grid md:grid-cols-2 gap-6">
-                <input
-                  type="text"
-                  name="location"
-                  placeholder="Your Location"
-                  value={formData.location}
-                  onChange={handleChange}
-                  className="input"
-                />
-                <input
-                  type="text"
-                  name="industry"
-                  placeholder="Industries of Interest"
-                  value={formData.industry}
-                  onChange={handleChange}
-                  className="input"
-                />
-              </div>
-              <div className="grid md:grid-cols-2 gap-6">
-                <input
-                  type="text"
-                  name="stage"
-                  placeholder="Stage (Seed, Series A...)"
-                  value={formData.stage}
-                  onChange={handleChange}
-                  className="input"
-                />
-                <select
-                  name="risk"
-                  value={formData.risk}
-                  onChange={handleChange}
-                  className="input"
-                >
-                  <option value="">Risk Appetite</option>
-                  <option value="Low">Low</option>
-                  <option value="Medium">Medium</option>
-                  <option value="High">High</option>
-                </select>
-              </div>
-              <input
-                type="text"
-                name="portfolioSize"
-                placeholder="Portfolio Size (USD)"
-                value={formData.portfolioSize}
-                onChange={handleChange}
-                className="input"
-              />
-              <div className="text-right">
-                <button
-                  onClick={addInvestorData}
-                  type="submit"
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg shadow-md transition"
-                >
-                  Submit
-                </button>
-              </div>
-            </form>
+// --- SUBMIT INVESTOR FORM COMPONENT (Modal) ---
+
+const SubmitInvestorForm = ({ onClose }) => {
+  // Form logic would go here
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log("Investor form submitted");
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 animate-fadeIn">
+      <div className="bg-slate-800/80 backdrop-blur-lg border border-slate-700 rounded-2xl p-8 w-full max-w-3xl shadow-2xl shadow-black/20 animate-slideUp relative">
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-slate-500 hover:text-red-400"
+        >
+          <X className="w-6 h-6" />
+        </button>
+        <h2 className="text-3xl font-bold text-white mb-6 font-poppins">
+          Become an Investor
+        </h2>
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div className="grid md:grid-cols-2 gap-5">
+            <input
+              type="text"
+              name="fullName"
+              placeholder="Full Name"
+              required
+              className="input-field"
+            />
+            <input
+              type="email"
+              name="email"
+              placeholder="Contact Email"
+              required
+              className="input-field"
+            />
           </div>
-        </div>
-      )}
-
-      {/* Animations */}
+          <div className="grid md:grid-cols-2 gap-5">
+            <input
+              type="text"
+              name="location"
+              placeholder="Location (e.g., Bengaluru, India)"
+              required
+              className="input-field"
+            />
+            <input
+              type="text"
+              name="linkedin"
+              placeholder="LinkedIn Profile URL"
+              required
+              className="input-field"
+            />
+          </div>
+          <textarea
+            name="industryFocus"
+            placeholder="Industries of Interest (comma-separated)"
+            rows="2"
+            required
+            className="input-field"
+          />
+          <textarea
+            name="investmentThesis"
+            placeholder="Briefly describe your investment thesis..."
+            rows="3"
+            className="input-field"
+          />
+          <div className="text-right pt-4">
+            <button
+              type="submit"
+              className="bg-cyan-400 hover:bg-cyan-300 text-slate-900 font-bold px-8 py-2.5 rounded-lg shadow-md transition-colors"
+            >
+              Submit Application
+            </button>
+          </div>
+        </form>
+      </div>
       <style jsx>{`
-        .input {
-          @apply w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none;
+        .input-field {
+          @apply w-full bg-slate-800 border border-slate-700 rounded-lg py-2.5 px-4 text-slate-300 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500;
         }
-        @keyframes slide-up {
+        @keyframes slideUp {
           from {
             opacity: 0;
             transform: translateY(30px);
@@ -305,10 +430,10 @@ const Investor = () => {
             transform: translateY(0);
           }
         }
-        .animate-slide-up {
-          animation: slide-up 0.4s ease-out forwards;
+        .animate-slideUp {
+          animation: slideUp 0.4s ease-out forwards;
         }
-        @keyframes fade-in {
+        @keyframes fadeIn {
           from {
             opacity: 0;
           }
@@ -316,8 +441,8 @@ const Investor = () => {
             opacity: 1;
           }
         }
-        .animate-fade-in {
-          animation: fade-in 0.3s ease-in;
+        .animate-fadeIn {
+          animation: fadeIn 0.3s ease-in forwards;
         }
       `}</style>
     </div>

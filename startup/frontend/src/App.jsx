@@ -11,6 +11,10 @@ import { AuthProvider } from "./contexts/AuthContext";
 import Settings from "./Routes/Settings";
 import ProfileContent from "./Routes/ProfileContent";
 import DashboardContent from "./Routes/DashboardContent";
+import SecurityContent from "./Routes/SecurityContent";
+import NotificationsContent from "./Routes/NotificationsContent";
+import BillingContent from "./Routes/BillingContent";
+import Chatbot from "./components/Chatbot";
 
 function App() {
   const location = useLocation();
@@ -33,8 +37,12 @@ function App() {
           <Route index element={<Navigate to="settings/profile" replace />} />
           <Route path="profile" element={<ProfileContent />} />
           <Route path="dashboard" element={<DashboardContent />} />
+          <Route path="security" element={<SecurityContent />} />
+          <Route path="notifications" element={<NotificationsContent />} />
+          <Route path="billing" element={<BillingContent />} />
         </Route>
       </Routes>
+      <Chatbot />
     </AuthProvider>
   );
 }

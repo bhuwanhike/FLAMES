@@ -18,7 +18,7 @@ a {
 }
 a:hover {
   color: #f3f4f6eb;
-  text-decoration: underline;
+  /* text-decoration: underline; */
   text-underline-offset: 5px;
 }
 
