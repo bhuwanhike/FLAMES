@@ -32,16 +32,19 @@ const Navbar = () => {
   return (
     <nav className="bg-slate-900/80 backdrop-blur-sm px-6 py-3 sticky top-0 z-50 border-b border-slate-800">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        {/* Logo */}
-        <Link
-          to="/"
-          className="flex items-center space-x-2 font-semibold"
-          onClick={closeAllMenus}
-        >
-          <span className="logo-animation text-3xl font-bold !text-pink-600 font-poppins">
-            PitchPort
-          </span>
-        </Link>
+        <div className="flex items-center space-x-2">
+          {/* Logo */}
+          <img src="/pp.svg" alt="" className="w-8 h-8" />
+          <Link
+            to="/"
+            className="flex items-center space-x-2 font-semibold"
+            onClick={closeAllMenus}
+          >
+            <span className="logo-animation text-3xl font-bold !text-pink-600 font-poppins">
+              PitchPort
+            </span>
+          </Link>
+        </div>
 
         {/* Desktop Menu */}
         <div className="hidden md:flex space-x-8 !text-slate-300 font-semibold items-center text-[1.1rem]">

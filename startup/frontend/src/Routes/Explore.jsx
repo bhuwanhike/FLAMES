@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { ReactTyped } from "react-typed";
 import { ArrowRight } from "lucide-react";
 import { AuthContext } from "../contexts/auth-context";
-
+import axios from "axios";
 // A utility component for the glowing effect, makes the code cleaner
 const Glow = () => (
   <div className="absolute -inset-0.5 -z-10 rounded-lg bg-gradient-to-r from-pink-600 via-purple-600 to-cyan-500 opacity-0 blur transition duration-500 group-hover:opacity-75" />
@@ -13,7 +13,7 @@ const Explore = () => {
   const { isLoggedIn, setRole } = useContext(AuthContext);
 
   // Updated dummy data with more modern/abstract logos
-  const fundedStartups = [
+  const fundedStartupsDemo = [
     {
       id: 1,
       name: "InnovateX Solutions",
@@ -64,6 +64,21 @@ const Explore = () => {
       investor: "From Innovate Capital",
     },
   ];
+  const [fundedStartups, setFundedStartups] = useState(fundedStartupsDemo);
+
+  const getNEWS = async () => {
+    const response = await axios.get(
+      `https://newsapi.org/v2/everything?q=("startup funding" OR "seed round" OR "series a" OR "startup investment") AND "India"&language=en&sortBy=publishedAt&apiKey=${
+        import.meta.env.VITE_NEWS_API_KEY
+      }`
+    );
+    const news = response.data.articles;
+    console.log(news);
+    setFundedStartups(news);
+  };
+  useEffect(() => {
+    getNEWS();
+  }, []);
 
   const scrollContainerRef = useRef(null);
   const intervalRef = useRef(null);
@@ -194,25 +209,25 @@ const Explore = () => {
             ref={scrollContainerRef}
             onMouseEnter={() => setIsHovering(true)}
             onMouseLeave={() => setIsHovering(false)}
-            className="flex overflow-x-auto no-scrollbar pb-4 px-4 space-x-8"
+            className="flex overflow-x-auto no-scrollbar pb-4 px-4 space-x-8 pt-8"
           >
-            {[...fundedStartups].map((startup, index) => (
+            {fundedStartups.map((startup, index) => (
               <div
                 key={`${startup.id}-${index}`}
-                className="group startup-card flex-none w-[400px] p-6 bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/80 transition-all duration-300 hover:bg-slate-700/50 hover:border-cyan-400/50 hover:-translate-y-2 flex flex-col"
+                className="group startup-card flex-none w-[400px] p-6  bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/80 transition-all duration-300 hover:bg-slate-700/50 hover:border-cyan-400/50 hover:-translate-y-2 flex flex-col"
               >
                 <div className="flex items-center gap-5 mb-4">
                   <div className="relative w-20 h-20 flex-shrink-0">
                     <div className="absolute -inset-0.5 rounded-full bg-gradient-to-r from-purple-600 to-cyan-500 opacity-0 group-hover:opacity-100 transition duration-300 blur-sm"></div>
                     <img
-                      src={startup.logo}
+                      src={startup.urlToImage}
                       alt={`${startup.name} Logo`}
                       className="relative w-full h-full rounded-full object-cover border-2 border-slate-700"
                     />
                   </div>
                   <div>
                     <h3 className="text-xl font-bold text-white font-poppins truncate">
-                      {startup.name}
+                      {startup.title}
                     </h3>
                     <p className="text-sm text-slate-400">{startup.investor}</p>
                   </div>
@@ -223,7 +238,9 @@ const Explore = () => {
                   </p>
                 </div>
                 <Link
-                  to={`/startup/${startup.id}`}
+                  to={`${startup.url}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="mt-auto text-cyan-400 font-semibold text-sm flex items-center gap-2 group-hover:text-cyan-300 transition-colors"
                 >
                   View Details

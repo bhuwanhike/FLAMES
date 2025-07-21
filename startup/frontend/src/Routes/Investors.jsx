@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useContext, useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import {
   Search,
@@ -11,8 +11,17 @@ import {
   Linkedin,
   Twitter,
   Globe,
+  User,
+  Mail,
+  Lightbulb,
+  Send,
 } from "lucide-react";
-import { AuthContext } from "../contexts/auth-context";
+
+// Assuming AuthContext is in this path
+// import { AuthContext } from "../contexts/auth-context";
+
+// Mock AuthContext for demonstration
+const AuthContext = React.createContext({ isLoggedIn: true });
 
 // --- DUMMY DATA ---
 const allInvestors = [
@@ -130,14 +139,12 @@ const Investor = () => {
     investmentStage: [],
   });
   const [searchTerm, setSearchTerm] = useState("");
-
   const [showForm, setShowForm] = useState(false);
 
   const [searchParams, setSearchParams] = useSearchParams();
 
   useEffect(() => {
-    const action = searchParams.get("action");
-    if (action === "showInvestorForm") {
+    if (searchParams.get("action") === "showInvestorForm") {
       setShowForm(true);
       searchParams.delete("action");
       setSearchParams(searchParams, { replace: true });
@@ -173,8 +180,7 @@ const Investor = () => {
     });
   }, [filters, searchTerm]);
 
-  // This would be in your AuthContext
-  const { isLoggedIn } = { isLoggedIn: true };
+  const { isLoggedIn } = useContext(AuthContext);
 
   return (
     <div className="min-h-screen bg-[#0D1117] text-slate-300 font-inter">
@@ -336,11 +342,10 @@ const Investor = () => {
           if (isLoggedIn) {
             setShowForm(true);
           } else {
-            // Replace with a proper modal alert if you have one
             alert("You need to be logged in to become an investor.");
           }
         }}
-        className="fixed bottom-6 right-6 flex items-center gap-2 px-5 py-3 rounded-full bg-cyan-400 text-white font-bold shadow-lg shadow-cyan-500/20 hover:scale-105 hover:bg-cyan-300 transition-all transform z-50"
+        className="fixed bottom-6 right-6 flex items-center gap-2 px-5 py-3 rounded-full bg-cyan-400 font-bold shadow-lg shadow-cyan-500/20 hover:scale-105 hover:bg-cyan-300 transition-all transform z-50 text-white"
       >
         <PlusCircle className="w-5 h-5" />
         Become an Investor
@@ -353,9 +358,7 @@ const Investor = () => {
 };
 
 // --- SUBMIT INVESTOR FORM COMPONENT (Modal) ---
-
 const SubmitInvestorForm = ({ onClose }) => {
-  // Form logic would go here
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log("Investor form submitted");
@@ -364,76 +367,105 @@ const SubmitInvestorForm = ({ onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 animate-fadeIn">
-      <div className="bg-slate-800/80 backdrop-blur-lg border border-slate-700 rounded-2xl p-8 w-full max-w-3xl shadow-2xl shadow-black/20 animate-slideUp relative">
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-slate-500 hover:text-red-400"
-        >
-          <X className="w-6 h-6" />
-        </button>
-        <h2 className="text-3xl font-bold text-white mb-6 font-poppins">
-          Become an Investor
-        </h2>
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div className="grid md:grid-cols-2 gap-5">
-            <input
-              type="text"
-              name="fullName"
-              placeholder="Full Name"
-              required
-              className="input-field"
-            />
-            <input
-              type="email"
-              name="email"
-              placeholder="Contact Email"
-              required
-              className="input-field"
-            />
-          </div>
-          <div className="grid md:grid-cols-2 gap-5">
-            <input
-              type="text"
-              name="location"
-              placeholder="Location (e.g., Bengaluru, India)"
-              required
-              className="input-field"
-            />
-            <input
-              type="text"
-              name="linkedin"
-              placeholder="LinkedIn Profile URL"
-              required
-              className="input-field"
-            />
-          </div>
-          <textarea
-            name="industryFocus"
-            placeholder="Industries of Interest (comma-separated)"
-            rows="2"
-            required
-            className="input-field"
-          />
-          <textarea
-            name="investmentThesis"
-            placeholder="Briefly describe your investment thesis..."
-            rows="3"
-            className="input-field"
-          />
-          <div className="text-right pt-4">
+      <div className="relative w-full max-w-3xl">
+        {/* Glow Effect */}
+        <div className="absolute -inset-1.5 bg-gradient-to-r from-purple-600 to-cyan-500 rounded-2xl blur-md opacity-60"></div>
+
+        {/* Form Container */}
+        <div className="relative bg-slate-800/80 backdrop-blur-lg border border-slate-700/80 rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-slideUp">
+          {/* Header */}
+          <div className="flex items-center justify-between p-6 border-b border-slate-700/80 flex-shrink-0">
+            <h2 className="text-2xl font-bold !text-white font-poppins">
+              Become an Investor
+            </h2>
             <button
-              type="submit"
-              className="bg-cyan-400 hover:bg-cyan-300 text-slate-900 font-bold px-8 py-2.5 rounded-lg shadow-md transition-colors"
+              onClick={onClose}
+              className="text-slate-500 hover:text-red-400"
             >
-              Submit Application
+              <X className="w-6 h-6" />
             </button>
           </div>
-        </form>
+
+          {/* Form Body */}
+          <form
+            onSubmit={handleSubmit}
+            className="p-6 space-y-6 overflow-y-auto max-h-[80vh]"
+          >
+            {/* Section 1: Personal Information */}
+            <section>
+              <h3 className="text-lg font-semibold text-cyan-400 mb-4">
+                Personal Information
+              </h3>
+              <div className="grid md:grid-cols-2 gap-5">
+                <FormField
+                  icon={<User />}
+                  label="Full Name"
+                  name="fullName"
+                  placeholder="e.g., Bhavya Tyagi"
+                  required
+                />
+                <FormField
+                  icon={<Mail />}
+                  label="Contact Email"
+                  type="email"
+                  name="email"
+                  placeholder="you@example.com"
+                  required
+                />
+                <FormField
+                  icon={<MapPin />}
+                  label="Location"
+                  name="location"
+                  placeholder="e.g., Bengaluru, India"
+                  required
+                />
+                <FormField
+                  icon={<Linkedin />}
+                  label="LinkedIn Profile URL"
+                  name="linkedin"
+                  placeholder="linkedin.com/in/your-profile"
+                  required
+                />
+              </div>
+            </section>
+
+            {/* Section 2: Investment Thesis */}
+            <section>
+              <h3 className="text-lg font-semibold text-cyan-400 mb-4">
+                Investment Thesis
+              </h3>
+              <div className="space-y-5">
+                <FormField
+                  icon={<Briefcase />}
+                  label="Industries of Interest"
+                  name="industryFocus"
+                  placeholder="e.g., FinTech, SaaS, HealthTech"
+                  required
+                />
+                <FormField
+                  icon={<Lightbulb />}
+                  label="Investment Philosophy"
+                  isTextArea={true}
+                  name="investmentThesis"
+                  placeholder="Briefly describe your investment strategy and what you look for in a startup..."
+                />
+              </div>
+            </section>
+
+            {/* Footer & Submit Button */}
+            <div className="text-right pt-4 border-t border-slate-700/50">
+              <button
+                type="submit"
+                className="inline-flex items-center gap-2 bg-cyan-400 hover:bg-cyan-300 text-white font-bold px-8 py-2.5 rounded-lg shadow-md transition-colors"
+              >
+                <Send className="w-4 h-4" />
+                Submit Application
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
       <style jsx>{`
-        .input-field {
-          @apply w-full bg-slate-800 border border-slate-700 rounded-lg py-2.5 px-4 text-slate-300 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500;
-        }
         @keyframes slideUp {
           from {
             opacity: 0;
@@ -459,6 +491,49 @@ const SubmitInvestorForm = ({ onClose }) => {
           animation: fadeIn 0.3s ease-in forwards;
         }
       `}</style>
+    </div>
+  );
+};
+
+// Reusable Form Field Component for cleaner code
+const FormField = ({
+  icon,
+  label,
+  name,
+  placeholder,
+  type = "text",
+  isTextArea = false,
+  required = false,
+}) => {
+  const inputClasses =
+    "w-full bg-slate-900 border border-slate-700 rounded-lg py-2.5 pl-10 pr-4 text-slate-300 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500";
+  return (
+    <div>
+      <label className="block text-sm font-medium text-slate-300 mb-2">
+        {label}
+      </label>
+      <div className="relative flex items-center">
+        <div className="absolute left-3 text-slate-500 pointer-events-none">
+          {React.cloneElement(icon, { className: "w-5 h-5" })}
+        </div>
+        {isTextArea ? (
+          <textarea
+            name={name}
+            placeholder={placeholder}
+            rows="3"
+            required={required}
+            className={inputClasses}
+          />
+        ) : (
+          <input
+            type={type}
+            name={name}
+            placeholder={placeholder}
+            required={required}
+            className={inputClasses}
+          />
+        )}
+      </div>
     </div>
   );
 };

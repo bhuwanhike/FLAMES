@@ -8,9 +8,20 @@ import {
   ChevronDown,
   X,
   PlusCircle,
+  Building,
+  Mail,
+  Lightbulb,
+  Target,
+  Users,
+  Send,
 } from "lucide-react";
+import axios from "axios";
 
-import { AuthContext } from "../contexts/auth-context";
+// Assuming AuthContext is in this path
+// import { AuthContext } from "../contexts/auth-context";
+
+// Mock AuthContext for demonstration
+const AuthContext = React.createContext({ isLoggedIn: true });
 
 // --- DUMMY DATA ---
 const allStartups = [
@@ -59,56 +70,11 @@ const allStartups = [
     fundingAmount: 750000,
     summary: "Cloud-based data analytics for small businesses.",
   },
-  {
-    id: 6,
-    name: "Groww",
-    industry: "FinTech",
-    location: "Bengaluru",
-    fundingStage: "Series E",
-    fundingAmount: 393000000,
-    summary: "User-friendly platform for stocks and mutual funds.",
-  },
-  {
-    id: 7,
-    name: "Licious",
-    industry: "FoodTech",
-    location: "Bengaluru",
-    fundingStage: "Series F",
-    fundingAmount: 490000000,
-    summary: "Online delivery of fresh meat and seafood.",
-  },
-  {
-    id: 8,
-    name: "CureBay",
-    industry: "HealthTech",
-    location: "Bhubaneswar",
-    fundingStage: "Seed",
-    fundingAmount: 6000000,
-    summary: "Hybrid healthcare for rural India.",
-  },
-  {
-    id: 9,
-    name: "SynthWave Labs",
-    industry: "SaaS",
-    location: "Mumbai",
-    fundingStage: "Series A",
-    fundingAmount: 3000000,
-    summary: "AI-powered music composition tools for creators.",
-  },
 ];
 
 const industries = [...new Set(allStartups.map((s) => s.industry))];
 const locations = [...new Set(allStartups.map((s) => s.location))];
-const fundingStages = [
-  "Pre-Seed",
-  "Seed",
-  "Series A",
-  "Series B",
-  "Series C",
-  "Series D",
-  "Series E",
-  "Series F",
-];
+const fundingStages = ["Pre-Seed", "Seed", "Series A", "Series B", "Series C"];
 
 // --- HELPER COMPONENTS ---
 
@@ -148,19 +114,27 @@ const Checkbox = ({ id, label, checked, onChange }) => (
 // --- MAIN STARTUP PAGE COMPONENT ---
 
 const Startup = () => {
+  // const getStartups = async () => {
+  //   const startups = await axios.get("http://localhost:5000/startups");
+  //   console.log(startups);
+  // };
+
+  // useEffect(() => {
+  //   getStartups();
+  // }, []);
+
   const [filters, setFilters] = useState({
     industry: [],
     location: [],
     fundingStage: [],
   });
   const [searchTerm, setSearchTerm] = useState("");
-
   const [showForm, setShowForm] = useState(false);
+
   const [searchParams, setSearchParams] = useSearchParams();
 
   useEffect(() => {
-    const action = searchParams.get("action");
-    if (action === "showStartupForm") {
+    if (searchParams.get("action") === "showForm") {
       setShowForm(true);
       searchParams.delete("action");
       setSearchParams(searchParams, { replace: true });
@@ -194,8 +168,7 @@ const Startup = () => {
     });
   }, [filters, searchTerm]);
 
-  // This would be in your AuthContext
-  const { isLoggedIn } = { isLoggedIn: true };
+  const { isLoggedIn } = useContext(AuthContext);
 
   return (
     <div className="min-h-screen bg-[#0D1117] text-slate-300 font-inter">
@@ -335,11 +308,10 @@ const Startup = () => {
           if (isLoggedIn) {
             setShowForm(true);
           } else {
-            // Replace with a proper modal alert if you have one
             alert("You need to be logged in to submit a startup.");
           }
         }}
-        className="fixed bottom-6 right-6 flex items-center gap-2 px-5 py-3 rounded-full bg-cyan-400 text-white font-bold shadow-lg shadow-cyan-500/20 hover:scale-105 hover:bg-cyan-300 transition-all transform z-50"
+        className="fixed bottom-6 right-6 flex items-center gap-2 px-5 py-3 rounded-full bg-cyan-400 text-white font-bold shadow-lg shadow-cyan-500/20 hover:scale-105 hover:bg-cyan-300 transition-all transform z-50 "
       >
         <PlusCircle className="w-5 h-5" />
         Submit Startup
@@ -352,104 +324,140 @@ const Startup = () => {
 };
 
 // --- SUBMIT STARTUP FORM COMPONENT (Modal) ---
-
+// This is the new, redesigned form component
 const SubmitStartupForm = ({ onClose }) => {
-  // Form logic would go here
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Handle form submission logic
-    console.log("Form submitted");
+    console.log("Form submitted!");
     onClose();
   };
 
   return (
     <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 animate-fadeIn">
-      <div className="bg-slate-800/80 backdrop-blur-lg border border-slate-700 rounded-2xl p-8 w-full max-w-3xl shadow-2xl shadow-black/20 animate-slideUp relative">
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-slate-500 hover:text-red-400"
-        >
-          <X className="w-6 h-6" />
-        </button>
-        <h2 className="text-3xl font-bold text-white mb-6 font-poppins">
-          Submit Your Startup
-        </h2>
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div className="grid md:grid-cols-2 gap-5">
-            <input
-              type="text"
-              name="startupName"
-              placeholder="Startup Name"
-              required
-              className="input-field"
-            />
-            <input
-              type="text"
-              name="industry"
-              placeholder="Industry"
-              required
-              className="input-field"
-            />
-          </div>
-          <div className="grid md:grid-cols-2 gap-5">
-            <input
-              type="text"
-              name="location"
-              placeholder="Location (e.g., Bengaluru, India)"
-              required
-              className="input-field"
-            />
-            <input
-              type="email"
-              name="email"
-              placeholder="Contact Email"
-              required
-              className="input-field"
-            />
-          </div>
-          <textarea
-            name="idea"
-            placeholder="Describe your startup's core idea..."
-            rows="3"
-            required
-            className="input-field"
-          />
-          <div className="grid md:grid-cols-2 gap-5">
-            <input
-              type="text"
-              name="fundingStage"
-              placeholder="Current Funding Stage (e.g., Seed)"
-              required
-              className="input-field"
-            />
-            <input
-              type="number"
-              name="fundingNeeded"
-              placeholder="Funding Amount Needed ($)"
-              required
-              className="input-field"
-            />
-          </div>
-          <textarea
-            name="team"
-            placeholder="Tell us about your team..."
-            rows="2"
-            className="input-field"
-          />
-          <div className="text-right pt-4">
+      <div className="relative w-full max-w-3xl">
+        {/* Glow Effect */}
+        <div className="absolute -inset-1.5 bg-gradient-to-r from-purple-600 to-cyan-500 rounded-2xl blur-md opacity-60"></div>
+
+        {/* Form Container */}
+        <div className="relative bg-slate-800/80 backdrop-blur-lg border border-slate-700/80 rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-slideUp">
+          {/* Header */}
+          <div className="flex items-center justify-between p-6 border-b border-slate-700/80 flex-shrink-0">
+            <h2 className="text-2xl font-bold !text-white font-poppins">
+              Submit Your Startup
+            </h2>
             <button
-              type="submit"
-              className="bg-cyan-400 hover:bg-cyan-300 text-slate-900 font-bold px-8 py-2.5 rounded-lg shadow-md transition-colors"
+              onClick={onClose}
+              className="text-slate-500 hover:text-red-400"
             >
-              Submit for Review
+              <X className="w-6 h-6" />
             </button>
           </div>
-        </form>
+
+          {/* Form Body */}
+          <form
+            onSubmit={handleSubmit}
+            className="p-6 space-y-6 overflow-y-auto max-h-[80vh]"
+          >
+            {/* Section 1: Core Details */}
+            <section>
+              <h3 className="text-lg font-semibold text-cyan-400 mb-4">
+                Core Details
+              </h3>
+              <div className="grid md:grid-cols-2 gap-5">
+                <FormField
+                  icon={<Building />}
+                  label="Startup Name"
+                  name="startupName"
+                  placeholder="e.g., InnovateX"
+                  required
+                />
+                <FormField
+                  icon={<Briefcase />}
+                  label="Industry"
+                  name="industry"
+                  placeholder="e.g., FinTech"
+                  required
+                />
+                <FormField
+                  icon={<MapPin />}
+                  label="Location"
+                  name="location"
+                  placeholder="e.g., Bengaluru, India"
+                  required
+                />
+                <FormField
+                  icon={<Mail />}
+                  label="Contact Email"
+                  type="email"
+                  name="email"
+                  placeholder="you@example.com"
+                  required
+                />
+              </div>
+              <div className="mt-5">
+                <FormField
+                  icon={<Lightbulb />}
+                  label="Core Idea"
+                  isTextArea={true}
+                  name="idea"
+                  placeholder="Describe your startup's mission and solution..."
+                  required
+                />
+              </div>
+            </section>
+
+            {/* Section 2: Funding */}
+            <section>
+              <h3 className="text-lg font-semibold text-cyan-400 mb-4">
+                Funding
+              </h3>
+              <div className="grid md:grid-cols-2 gap-5">
+                <FormField
+                  icon={<Target />}
+                  label="Current Funding Stage"
+                  name="fundingStage"
+                  placeholder="e.g., Seed"
+                  required
+                />
+                <FormField
+                  icon={<DollarSign />}
+                  label="Funding Amount Needed ($)"
+                  type="number"
+                  name="fundingNeeded"
+                  placeholder="e.g., 500000"
+                  required
+                />
+              </div>
+            </section>
+
+            {/* Section 3: Team */}
+            <section>
+              <h3 className="text-lg font-semibold text-cyan-400 mb-4">
+                The Team
+              </h3>
+              <FormField
+                icon={<Users />}
+                label="Founding Team"
+                isTextArea={true}
+                name="team"
+                placeholder="Tell us about the founders and key team members..."
+              />
+            </section>
+
+            {/* Footer & Submit Button */}
+            <div className="text-right pt-4 border-t border-slate-700/50">
+              <button
+                type="submit"
+                className="inline-flex items-center gap-2 bg-cyan-400 hover:bg-cyan-300 text-white font-bold px-8 py-2.5 rounded-lg shadow-md transition-colors"
+              >
+                <Send className="w-4 h-4" />
+                Submit for Review
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
       <style jsx>{`
-        .input-field {
-          @apply w-full bg-slate-800 border border-slate-700 rounded-lg py-2.5 px-4 text-slate-300 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500;
-        }
         @keyframes slideUp {
           from {
             opacity: 0;
@@ -475,6 +483,50 @@ const SubmitStartupForm = ({ onClose }) => {
           animation: fadeIn 0.3s ease-in forwards;
         }
       `}</style>
+    </div>
+  );
+};
+
+// Reusable Form Field Component for cleaner code
+const FormField = ({
+  icon,
+  label,
+  name,
+  placeholder,
+  type = "text",
+  isTextArea = false,
+  required = false,
+}) => {
+  const inputClasses =
+    "w-full bg-slate-900 border border-slate-700 rounded-lg py-2.5 pl-10 pr-4 text-slate-300 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500";
+
+  return (
+    <div>
+      <label className="block text-sm font-medium text-slate-300 mb-2">
+        {label}
+      </label>
+      <div className="relative flex items-center">
+        <div className="absolute left-3 text-slate-500 pointer-events-none">
+          {React.cloneElement(icon, { className: "w-5 h-5" })}
+        </div>
+        {isTextArea ? (
+          <textarea
+            name={name}
+            placeholder={placeholder}
+            rows="3"
+            required={required}
+            className={inputClasses}
+          />
+        ) : (
+          <input
+            type={type}
+            name={name}
+            placeholder={placeholder}
+            required={required}
+            className={inputClasses}
+          />
+        )}
+      </div>
     </div>
   );
 };
