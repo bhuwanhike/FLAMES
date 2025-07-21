@@ -3,10 +3,7 @@
   line-height: 1.5;
   font-weight: 400;
 
-  /* color-scheme: light dark; */
-  /* color: rgba(255, 255, 255, 0.87); */
-  /* background-color: #242424; */
-  color: #1a1a1a;
+  color: white;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -28,6 +25,7 @@ body {
   padding: 0;
   /* display: flex;
   place-items: center; */
+  background-color: #0d1117;
   min-width: 320px;
   min-height: 100vh;
 }
@@ -59,7 +57,7 @@ button:focus-visible {
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;
-    background-color: #ffffff;
+    background-color: #0d1117;
   }
   a:hover {
     color: #747bff;
@@ -67,4 +65,85 @@ button:focus-visible {
   button {
     background-color: #f9f9f9;
   }
+}
+/* bg-[#0D1117] */
+
+/* Add these styles to index.css */
+@keyframes professionalPulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+    text-shadow: 0 0 0 rgba(37, 99, 235, 0.7);
+  }
+  50% {
+    transform: scale(1.03);
+    opacity: 0.9;
+    text-shadow: 0 0 8px rgba(37, 99, 235, 0.4);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+    text-shadow: 0 0 0 rgba(37, 99, 235, 0.7);
+  }
+}
+
+.logo-animation {
+  position: relative;
+  display: inline-block;
+  color: #2563eb;
+  text-decoration: none;
+  animation: professionalPulse 3s ease-in-out infinite;
+}
+
+.logo-animation::before {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #2563eb, transparent);
+  transform: scaleX(0.8);
+  opacity: 0.7;
+  transition: all 0.3s ease;
+}
+
+/* Add these styles to index.css */
+@keyframes professionalPulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+    text-shadow: 0 0 0 rgba(37, 99, 235, 0.7);
+  }
+  50% {
+    transform: scale(1.03);
+    opacity: 0.9;
+    text-shadow: 0 0 8px rgba(37, 99, 235, 0.4);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+    text-shadow: 0 0 0 rgba(37, 99, 235, 0.7);
+  }
+}
+
+.logo-animation {
+  position: relative;
+  display: inline-block;
+  color: #2563eb;
+  text-decoration: none;
+  animation: professionalPulse 3s ease-in-out infinite;
+}
+
+.logo-animation::before {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #2563eb, transparent);
+  transform: scaleX(0.8);
+  opacity: 0.7;
+  transition: all 0.3s ease;
 }

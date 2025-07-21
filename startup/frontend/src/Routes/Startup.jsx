@@ -126,7 +126,7 @@ const Startup = () => {
   };
 
   return (
-    <div className="min-h-screen px-4 py-10 max-w-6xl mx-auto font-sans bg-gradient-to-tr from-gray-100 via-white to-gray-200 text-gray-800">
+    <div className="min-h-screen px-4 py-10 max-w-6xl mx-auto font-sans  text-gray-800">
       <h2 className="text-4xl font-extrabold text-center mb-10 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
         🌱 Explore Innovative Startups
       </h2>
