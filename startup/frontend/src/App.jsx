@@ -15,6 +15,7 @@ import SecurityContent from "./Routes/SecurityContent";
 import NotificationsContent from "./Routes/NotificationsContent";
 import BillingContent from "./Routes/BillingContent";
 import Chatbot from "./components/Chatbot";
+import Footer from "./components/Footer";
 
 function App() {
   const location = useLocation();
@@ -43,6 +44,7 @@ function App() {
         </Route>
       </Routes>
       <Chatbot />
+      {!hideNavbarOnPaths.includes(location.pathname) && <Footer />}
     </AuthProvider>
   );
 }

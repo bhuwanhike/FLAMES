@@ -1,14 +1,16 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import axios from "axios";
 import { User, Mail, Lock, Briefcase } from "lucide-react";
 import ButtonAuth from "../components/ButtonAuth";
+import { AuthContext } from "../contexts/auth-context";
 
 const Register = () => {
+  const { role } = useContext(AuthContext);
   const [formData, setFormData] = useState({
     username: "",
     email: "",
     password: "",
-    role: "user",
+    role: "",
   });
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -128,9 +130,17 @@ const Register = () => {
                 value={formData.role}
                 onChange={handleChange}
               >
-                <option value="user">User</option>
-                <option value="investor">Investor</option>
-                <option value="startup">Startup</option>
+                {role === "startup" ? (
+                  <div>
+                    <option value="startup">Startup</option>
+                    <option value="investor">Investor</option>
+                  </div>
+                ) : (
+                  <div>
+                    <option value="investor">Investor</option>
+                    <option value="startup">Startup</option>
+                  </div>
+                )}
               </select>
             </div>
 

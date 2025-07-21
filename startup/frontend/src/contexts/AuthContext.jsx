@@ -8,6 +8,22 @@ export const AuthProvider = ({ children }) => {
     return !!token;
   });
 
+  const [role, setRole] = useState("startup");
+
+  // startup page function
+  // const [startupForm, setStartupForm] = useState(false);
+
+  // investor page function
+  // const [investorForm, setInvestorForm] = useState(false);
+
+  // const setStartupFormView = (value) => {
+  //   setStartupForm(value);
+  // };
+
+  // const setInvestorFormView = (value) => {
+  //   setInvestorForm(value);
+  // };
+
   const [Fletter, setFletter] = useState("");
 
   const checkAuth = () => {
@@ -40,6 +56,12 @@ export const AuthProvider = ({ children }) => {
         checkAuth,
         logout,
         Fletter,
+        role,
+        setRole,
+        // startupForm,
+        // setStartupFormView,
+        // investorForm,
+        // setInvestorFormView,
       }}
     >
       {children}

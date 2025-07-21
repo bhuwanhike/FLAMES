@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useMemo, useEffect } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import {
   Search,
   Briefcase,
@@ -12,6 +12,7 @@ import {
   Twitter,
   Globe,
 } from "lucide-react";
+import { AuthContext } from "../contexts/auth-context";
 
 // --- DUMMY DATA ---
 const allInvestors = [
@@ -129,7 +130,19 @@ const Investor = () => {
     investmentStage: [],
   });
   const [searchTerm, setSearchTerm] = useState("");
+
   const [showForm, setShowForm] = useState(false);
+
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  useEffect(() => {
+    const action = searchParams.get("action");
+    if (action === "showInvestorForm") {
+      setShowForm(true);
+      searchParams.delete("action");
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   const handleFilterChange = (category, value) => {
     setFilters((prev) => {
@@ -323,6 +336,7 @@ const Investor = () => {
           if (isLoggedIn) {
             setShowForm(true);
           } else {
+            // Replace with a proper modal alert if you have one
             alert("You need to be logged in to become an investor.");
           }
         }}

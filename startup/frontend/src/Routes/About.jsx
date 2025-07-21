@@ -1,8 +1,10 @@
-import React from "react";
+import React, { useContext } from "react";
 import { Link } from "react-router-dom";
 import { Rocket, Lightbulb, Brain, Eye, Users, Zap } from "lucide-react";
+import { AuthContext } from "../contexts/auth-context";
 
 const About = () => {
+  const { isLoggedIn } = useContext(AuthContext);
   return (
     <>
       {/* Custom CSS for animations */}
@@ -120,8 +122,9 @@ const About = () => {
                 place.
               </p>
             </div>
+
             <Link
-              to="/register"
+              to={isLoggedIn ? "/" : "/register"}
               className="flex-shrink-0 bg-cyan-400 text-slate-900 font-bold px-8 py-3 rounded-full hover:bg-cyan-300 transition-colors transform hover:scale-105 shadow-lg shadow-cyan-500/20"
             >
               Get Started

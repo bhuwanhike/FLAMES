@@ -19,8 +19,8 @@ const RegisterSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ["user", "investor", "startup"],
-    default: "user",
+    enum: ["investor", "startup"],
+    default: "investor",
   },
 });
 

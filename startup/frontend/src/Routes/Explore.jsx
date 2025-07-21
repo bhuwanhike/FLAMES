@@ -1,14 +1,17 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useContext } from "react";
 import { Link } from "react-router-dom";
 import { ReactTyped } from "react-typed";
 import { ArrowRight } from "lucide-react";
+import { AuthContext } from "../contexts/auth-context";
 
 // A utility component for the glowing effect, makes the code cleaner
 const Glow = () => (
   <div className="absolute -inset-0.5 -z-10 rounded-lg bg-gradient-to-r from-pink-600 via-purple-600 to-cyan-500 opacity-0 blur transition duration-500 group-hover:opacity-75" />
 );
 
-const Home = () => {
+const Explore = () => {
+  const { isLoggedIn, setRole } = useContext(AuthContext);
+
   // Updated dummy data with more modern/abstract logos
   const fundedStartups = [
     {
@@ -148,15 +151,19 @@ const Home = () => {
 
           <div className="flex flex-col md:flex-row gap-6 justify-center">
             <Link
-              to="/startups"
+              to={isLoggedIn ? "/startups?action=showStartupForm" : "/register"}
               className="bg-gradient-to-r from-cyan-400 to-purple-600 !text-white px-10 py-4 rounded-full text-lg font-bold hover:opacity-90 transition-opacity transform hover:scale-105 shadow-lg font-poppins tracking-wide animate-fadeInDown"
+              onClick={() => setRole("startup")}
             >
               I'm a Startup
             </Link>
 
             <Link
-              to="/investors"
+              to={
+                isLoggedIn ? "/investors?action=showInvestorForm" : "/register"
+              }
               className="bg-slate-800/50 backdrop-blur-sm text-slate-300 border border-slate-700 px-10 py-4 rounded-full text-lg font-semibold hover:bg-slate-700/70 hover:border-slate-500 transition-all transform hover:scale-105 shadow-md font-poppins tracking-wide animate-fadeInDown"
+              onClick={() => setRole("investor")}
             >
               I'm an Investor
             </Link>
@@ -229,22 +236,25 @@ const Home = () => {
       </section>
 
       {/* Final Call to Action */}
-      <section className="py-24 px-6 bg-gradient-to-br from-[#0D1117] via-[#111827] to-[#030712] text-white text-center">
-        <h2 className="text-4xl md:text-6xl font-extrabold mb-6 font-poppins leading-tight">
-          Ready to ignite the future?
-        </h2>
-        <p className="mb-10 text-xl text-slate-400 max-w-2xl mx-auto">
-          Join the PitchPort network today and make an impact.
-        </p>
-        <Link
-          to="/register"
-          className="inline-block bg-gradient-to-r from-cyan-400 to-purple-600 !text-white font-bold px-12 py-5 rounded-full hover:opacity-90 transition-opacity transform hover:scale-105 shadow-2xl shadow-purple-500/20 text-xl font-poppins tracking-wide"
-        >
-          Get Started Now
-        </Link>
-      </section>
+
+      {!isLoggedIn && (
+        <section className="py-24 px-6 bg-gradient-to-br from-[#0D1117] via-[#111827] to-[#030712] text-white text-center">
+          <h2 className="text-4xl md:text-6xl font-extrabold mb-6 font-poppins leading-tight">
+            Ready to ignite the future?
+          </h2>
+          <p className="mb-10 text-xl text-slate-400 max-w-2xl mx-auto">
+            Join the PitchPort network today and make an impact.
+          </p>
+          <Link
+            to="/register"
+            className="inline-block bg-gradient-to-r from-cyan-400 to-purple-600 !text-white font-bold px-12 py-5 rounded-full hover:opacity-90 transition-opacity transform hover:scale-105 shadow-2xl shadow-purple-500/20 text-xl font-poppins tracking-wide"
+          >
+            Get Started Now
+          </Link>
+        </section>
+      )}
     </div>
   );
 };
 
-export default Home;
+export default Explore;
