@@ -1,9 +1,16 @@
 import User from "../schema/register.schema.js";
 import AddInvestor from "../schema/addinvestor.schema.js";
 const addInvestorController = async (req, res) => {
-  //   try {
-  const { fullname, email, location, industry, stage, risk, portfolioSize } =
-    req.body;
+  // try {
+  const {
+    fullname,
+    email,
+    location,
+    industry,
+    fundingStage,
+    risk,
+    portfolioSize,
+  } = req.body;
 
   const userExist = await User.findOne({
     email: { $regex: String(email), $options: "i" },
@@ -16,7 +23,7 @@ const addInvestorController = async (req, res) => {
       email,
       location,
       industry,
-      stage,
+      fundingStage,
       risk,
       portfolioSize,
     });
@@ -24,9 +31,11 @@ const addInvestorController = async (req, res) => {
   } else {
     res.status(201).json({ message: "User not found", userExist });
   }
-  //   } catch (error) {
-  //     res.status(500).json({ message: "cannot add user" });
-  //   }
+  // } catch (error) {
+  //   res
+  //     .status(500)
+  //     .json({ message: "cannot add user error from the controller" });
+  // }
 };
 
 const getInvestors = async (req, res) => {

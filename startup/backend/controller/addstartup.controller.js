@@ -1,41 +1,45 @@
 import User from "../schema/register.schema.js";
 import AddStartup from "../schema/addstartup.schema.js";
 const addStartupController = async (req, res) => {
-  //   try {
   const {
     startupName,
     location,
     industry,
     idea,
-    fundingNeeded,
-    traction,
+    fundingStage,
+    fundingAmount,
     email,
     team,
   } = req.body;
 
-  const userExist = await User.findOne({
-    email: { $regex: String(email), $options: "i" },
-  });
-  console.log("User found:", userExist);
+  // const userExist = await User.findOne({
+  //   email: { $regex: String(email), $options: "i" },
+  // });
+  // console.log("User found:", userExist);
 
-  if (userExist) {
-    const startup = await AddStartup.create({
-      startupName,
-      location,
-      industry,
-      idea,
-      fundingNeeded,
-      traction,
-      email,
-      team,
-    });
-    res.status(201).json({ message: "Startup added successfully", startup });
-  } else {
-    res.status(201).json({ message: "User not found", userExist });
-  }
-  //   } catch (error) {
-  //     res.status(500).json({ message: "cannot add user" });
-  //   }
+  // if (userExist) {
+  // try {
+  const startup = await AddStartup.create({
+    startupName,
+    location,
+    industry,
+    idea,
+    fundingStage,
+    fundingAmount,
+    email,
+    team,
+  });
+
+  res.status(201).json({ message: "Startup added successfully", startup });
+  // }
+  // else {
+  //   res.status(201).json({ message: "User not found", userExist });
+  // }
+  // } catch (error) {
+  //   res
+  //     .status(500)
+  //     .json({ message: "cannot add user error from the controller" });
+  // }
 };
 
 const getStartups = async (req, res) => {

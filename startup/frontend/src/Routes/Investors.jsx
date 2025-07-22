@@ -1,4 +1,10 @@
-import React, { useState, useMemo, useContext, useEffect } from "react";
+import React, {
+  useState,
+  useMemo,
+  useContext,
+  useEffect,
+  useCallback,
+} from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import {
   Search,
@@ -15,131 +21,97 @@ import {
   Mail,
   Lightbulb,
   Send,
+  Target,
+  ShieldAlert,
+  Wallet,
 } from "lucide-react";
-
-// Assuming AuthContext is in this path
-// import { AuthContext } from "../contexts/auth-context";
-
-// Mock AuthContext for demonstration
-const AuthContext = React.createContext({ isLoggedIn: true });
-
-// --- DUMMY DATA ---
-const allInvestors = [
-  {
-    id: 1,
-    name: "Kunal Shah",
-    location: "Mumbai",
-    industryFocus: ["FinTech", "SaaS", "Consumer"],
-    investmentStage: ["Seed", "Series A"],
-    bio: "Founder of CRED. Passionate about building high-trust ecosystems and backing disruptive ideas in tech.",
-    notableInvestments: ["Razorpay", "Meesho", "Unacademy"],
-    socials: { linkedin: "#", twitter: "#", website: "#" },
-  },
-  {
-    id: 2,
-    name: "Anupam Mittal",
-    location: "Mumbai",
-    industryFocus: ["Consumer", "HealthTech", "FinTech"],
-    investmentStage: ["Pre-Seed", "Seed"],
-    bio: "Founder of People Group (Shaadi.com). Early-stage investor focused on scalable consumer internet businesses.",
-    notableInvestments: ["Ola Cabs", "Druva", "Whatfix"],
-    socials: { linkedin: "#", twitter: "#", website: "#" },
-  },
-  {
-    id: 3,
-    name: "Rajan Anandan",
-    location: "Bengaluru",
-    industryFocus: ["SaaS", "AI", "HealthTech"],
-    investmentStage: ["Pre-Seed", "Seed", "Series A"],
-    bio: "Managing Director at Sequoia Capital. Formerly at Google. Deep expertise in scaling technology companies in India.",
-    notableInvestments: ["Dunzo", "Practo", "OYO"],
-    socials: { linkedin: "#", twitter: "#", website: "#" },
-  },
-  {
-    id: 4,
-    name: "Binny Bansal",
-    location: "Bengaluru",
-    industryFocus: ["E-commerce", "Logistics", "SaaS"],
-    investmentStage: ["Seed", "Series A", "Series B"],
-    bio: "Co-founder of Flipkart. Now investing in and mentoring the next wave of entrepreneurs through 021 Capital.",
-    notableInvestments: ["Acko", "Cure.fit", "Rupeek"],
-    socials: { linkedin: "#", twitter: "#", website: "#" },
-  },
-  {
-    id: 5,
-    name: "Vani Kola",
-    location: "Bengaluru",
-    industryFocus: ["FinTech", "HealthTech", "Consumer"],
-    investmentStage: ["Seed", "Series A"],
-    bio: "Managing Director at Kalaari Capital. A visionary investor known for identifying and nurturing category-defining companies.",
-    notableInvestments: ["Myntra", "Dream11", "Urban Ladder"],
-    socials: { linkedin: "#", twitter: "#", website: "#" },
-  },
-  {
-    id: 6,
-    name: "Girish Mathrubootham",
-    location: "Chennai",
-    industryFocus: ["SaaS", "DeepTech"],
-    investmentStage: ["Pre-Seed", "Seed"],
-    bio: "Founder of Freshworks. Actively invests in and mentors early-stage SaaS founders from India building for the world.",
-    notableInvestments: ["Chargebee", "Kissflow", "Whatfix"],
-    socials: { linkedin: "#", twitter: "#", website: "#" },
-  },
-];
-
-const industryOptions = [
-  ...new Set(allInvestors.flatMap((i) => i.industryFocus)),
-];
-const locationOptions = [...new Set(allInvestors.map((i) => i.location))];
-const stageOptions = [
-  ...new Set(allInvestors.flatMap((i) => i.investmentStage)),
-];
-
-// --- HELPER COMPONENTS ---
-
-const FilterSection = ({ title, children }) => {
-  const [isOpen, setIsOpen] = useState(true);
-  return (
-    <div className="py-4 border-b border-slate-700/50">
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex justify-between items-center text-left"
-      >
-        <h3 className="font-semibold text-white">{title}</h3>
-        <ChevronDown
-          className={`w-5 h-5 text-slate-400 transition-transform ${
-            isOpen ? "rotate-180" : ""
-          }`}
-        />
-      </button>
-      {isOpen && <div className="mt-4 space-y-2">{children}</div>}
-    </div>
-  );
-};
-
-const Checkbox = ({ id, label, checked, onChange }) => (
-  <label htmlFor={id} className="flex items-center space-x-3 cursor-pointer">
-    <input
-      id={id}
-      type="checkbox"
-      checked={checked}
-      onChange={onChange}
-      className="h-4 w-4 rounded bg-slate-700 border-slate-600 text-cyan-500 focus:ring-cyan-600 focus:ring-offset-slate-800"
-    />
-    <span className="text-slate-300">{label}</span>
-  </label>
-);
-
-// --- MAIN INVESTOR PAGE COMPONENT ---
+import { AuthContext } from "../contexts/auth-context";
+import SearchBar from "../components/SearchBar";
+import FilterContent from "../components/FilterContent";
+import axios from "axios";
+import Alert from "@mui/material/Alert";
+import AlertTitle from "@mui/material/AlertTitle";
 
 const Investor = () => {
+  const { isLoggedIn } = useContext(AuthContext);
+  // --- DUMMY DATA ---
+  const allInvestors = useMemo(
+    () => [
+      {
+        id: 1,
+        fullname: "Kunal Shah",
+        location: "Mumbai",
+        industry: ["FinTech", "SaaS", "Consumer"],
+        fundingStage: ["Seed", "Series A"],
+        bio: "Founder of CRED. Passionate about building high-trust ecosystems and backing disruptive ideas in tech.",
+        notableInvestments: ["Razorpay", "Meesho", "Unacademy"],
+        socials: { linkedin: "#", twitter: "#", website: "#" },
+      },
+      {
+        id: 2,
+        fullname: "Anupam Mittal",
+        location: "Mumbai",
+        industry: ["Consumer", "HealthTech", "FinTech"],
+        fundingStage: ["Pre-Seed", "Seed"],
+        bio: "Founder of People Group (Shaadi.com). Early-stage investor focused on scalable consumer internet businesses.",
+        notableInvestments: ["Ola Cabs", "Druva", "Whatfix"],
+        socials: { linkedin: "#", twitter: "#", website: "#" },
+      },
+      {
+        id: 3,
+        fullname: "Rajan Anandan",
+        location: "Bengaluru",
+        industry: ["SaaS", "AI", "HealthTech"],
+        fundingStage: ["Pre-Seed", "Seed", "Series A"],
+        bio: "Managing Director at Sequoia Capital. Formerly at Google. Deep expertise in scaling technology companies in India.",
+        notableInvestments: ["Dunzo", "Practo", "OYO"],
+        socials: { linkedin: "#", twitter: "#", website: "#" },
+      },
+      {
+        id: 4,
+        fullname: "Binny Bansal",
+        location: "Bengaluru",
+        industry: ["E-commerce", "Logistics", "SaaS"],
+        fundingStage: ["Seed", "Series A", "Series B"],
+        bio: "Co-founder of Flipkart. Now investing in and mentoring the next wave of entrepreneurs through 021 Capital.",
+        notableInvestments: ["Acko", "Cure.fit", "Rupeek"],
+        socials: { linkedin: "#", twitter: "#", website: "#" },
+      },
+      {
+        id: 5,
+        fullname: "Vani Kola",
+        location: "Bengaluru",
+        industry: ["FinTech", "HealthTech", "Consumer"],
+        fundingStage: ["Seed", "Series A"],
+        bio: "Managing Director at Kalaari Capital. A visionary investor known for identifying and nurturing category-defining companies.",
+        notableInvestments: ["Myntra", "Dream11", "Urban Ladder"],
+        socials: { linkedin: "#", twitter: "#", website: "#" },
+      },
+      {
+        id: 6,
+        fullname: "Girish Mathrubootham",
+        location: "Chennai",
+        industry: ["SaaS", "DeepTech"],
+        fundingStage: ["Pre-Seed", "Seed"],
+        bio: "Founder of Freshworks. Actively invests in and mentors early-stage SaaS founders from India building for the world.",
+        notableInvestments: ["Chargebee", "Kissflow", "Whatfix"],
+        socials: { linkedin: "#", twitter: "#", website: "#" },
+      },
+    ],
+    []
+  );
+
   const [filters, setFilters] = useState({
-    industryFocus: [],
+    industry: [],
     location: [],
-    investmentStage: [],
+    fundingStage: [],
   });
+  // const locationOptions = [...new Set(allInvestors.map((i) => i.location))];
   const [searchTerm, setSearchTerm] = useState("");
   const [showForm, setShowForm] = useState(false);
+  const [showLoginAlert, setShowLoginAlert] = useState(false);
+
+  const [investorList, setInvestorList] = useState(allInvestors);
 
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -160,93 +132,106 @@ const Investor = () => {
     });
   };
 
+  // Add startup
+  const addInvestor = useCallback(
+    async (investorData) => {
+      try {
+        // Ensure multi-select fields are arrays
+
+        const response = await axios.post(
+          "http://localhost:5000/addinvestor",
+          investorData
+        );
+        console.log(response.data);
+        setInvestorList((prev) => [response.data, ...prev]);
+        setShowForm(false); // Close modal on success
+      } catch (error) {
+        console.error(
+          "Error adding investor:",
+          error.response ? error.response.data : error.message
+        );
+      }
+    },
+    [] // No dependencies needed as it uses the functional form of setState
+  );
+
+  // Fetch startups from the database when the component mounts
+  useEffect(() => {
+    const getInvestors = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/investors");
+        if (response.data.length > 0) {
+          setInvestorList(response.data);
+        } else {
+          setInvestorList(allInvestors);
+        }
+      } catch (error) {
+        console.error("Error fetching investors:", error);
+        setInvestorList(allInvestors);
+      }
+    };
+    getInvestors();
+  }, [allInvestors]);
+
+  // const filteredStartups = useMemo(() => {
+  //   return startupList.filter((startup) => {
+  //     // FIX: Added a fallback to prevent crash if startup.name is undefined
+  //     const searchMatch = (startup.startupName || "")
+  //       .toLowerCase()
+  //       .includes(searchTerm.toLowerCase());
+  //     const industryMatch =
+  //       filters.industry.length === 0 ||
+  //       filters.industry.includes(startup.industry);
+  //     const locationMatch =
+  //       filters.location.length === 0 ||
+  //       filters.location.includes(startup.location);
+  //     const fundingStageMatch =
+  //       filters.fundingStage.length === 0 ||
+  //       filters.fundingStage.includes(startup.fundingStage);
+  //     return searchMatch && industryMatch && locationMatch && fundingStageMatch;
+  //   });
+  // }, [filters, searchTerm, startupList]);
+
   const filteredInvestors = useMemo(() => {
-    return allInvestors.filter((investor) => {
-      const searchMatch = investor.name
+    return investorList.filter((investor) => {
+      const searchMatch = (investor.fullname || " ")
         .toLowerCase()
         .includes(searchTerm.toLowerCase());
       const industryMatch =
-        filters.industryFocus.length === 0 ||
-        filters.industryFocus.some((f) => investor.industryFocus.includes(f));
+        filters.industry.length === 0 ||
+        filters.industry.includes(investor.industry);
       const locationMatch =
         filters.location.length === 0 ||
         filters.location.includes(investor.location);
       const stageMatch =
-        filters.investmentStage.length === 0 ||
-        filters.investmentStage.some((f) =>
-          investor.investmentStage.includes(f)
-        );
+        filters.fundingStage.length === 0 ||
+        filters.fundingStage.includes(investor.fundingStage);
       return searchMatch && industryMatch && locationMatch && stageMatch;
     });
-  }, [filters, searchTerm]);
-
-  const { isLoggedIn } = useContext(AuthContext);
+  }, [filters, searchTerm, investorList]);
 
   return (
     <div className="min-h-screen bg-[#0D1117] text-slate-300 font-inter">
       {/* Header */}
-      <div className="bg-slate-900/80 backdrop-blur-sm border-b border-slate-800 py-10 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto text-center">
-          <h1 className="text-4xl md:text-5xl font-extrabold text-white font-poppins mb-4">
-            Meet the Investors
-          </h1>
-          <p className="text-lg text-slate-400 max-w-2xl mx-auto mb-8">
-            Find and connect with strategic investors ready to fuel the next big
-            thing.
-          </p>
-          <div className="relative max-w-2xl mx-auto">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500" />
-            <input
-              type="text"
-              placeholder="Search by investor name..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-slate-800 border border-slate-700 rounded-full py-3 pl-12 pr-4 text-slate-300 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
-            />
-          </div>
-        </div>
-      </div>
+      <SearchBar
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        mainHeading={"Meet the Investors"}
+        subHeading={
+          "Find and connect with strategic investors ready to fuel the next big thing."
+        }
+        placeholderText={"Search by investor name..."}
+      />
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
           {/* Filters Sidebar */}
-          <aside className="lg:col-span-1 lg:sticky lg:top-24 bg-slate-800/50 backdrop-blur-sm border border-slate-700/80 rounded-2xl p-6">
-            <h2 className="text-xl font-bold text-white mb-4">Filters</h2>
-            <FilterSection title="Industry Focus">
-              {industryOptions.map((industry) => (
-                <Checkbox
-                  key={industry}
-                  id={`industry-${industry}`}
-                  label={industry}
-                  checked={filters.industryFocus.includes(industry)}
-                  onChange={() => handleFilterChange("industryFocus", industry)}
-                />
-              ))}
-            </FilterSection>
-            <FilterSection title="Location">
-              {locationOptions.map((location) => (
-                <Checkbox
-                  key={location}
-                  id={`location-${location}`}
-                  label={location}
-                  checked={filters.location.includes(location)}
-                  onChange={() => handleFilterChange("location", location)}
-                />
-              ))}
-            </FilterSection>
-            <FilterSection title="Investment Stage">
-              {stageOptions.map((stage) => (
-                <Checkbox
-                  key={stage}
-                  id={`stage-${stage}`}
-                  label={stage}
-                  checked={filters.investmentStage.includes(stage)}
-                  onChange={() => handleFilterChange("investmentStage", stage)}
-                />
-              ))}
-            </FilterSection>
-          </aside>
+          <FilterContent
+            startupList={allInvestors}
+            filters={filters}
+            onFilterChange={handleFilterChange}
+          />
 
           {/* Investors Grid */}
           <main className="lg:col-span-3">
@@ -254,117 +239,206 @@ const Investor = () => {
               {filteredInvestors.length > 0 ? (
                 filteredInvestors.map((investor) => (
                   <div
-                    key={investor.id}
+                    key={investor._id || investor.id}
                     className="group bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/80 p-6 transition-all duration-300 hover:bg-slate-700/50 hover:border-cyan-400/50 hover:-translate-y-1 flex flex-col"
                   >
                     <div className="flex items-center gap-4 mb-4">
                       <img
                         src={`https://i.pravatar.cc/150?u=${investor.id}`}
-                        alt={`${investor.name}`}
-                        className="w-16 h-16 rounded-full bg-slate-700 object-cover border-2 border-slate-600"
+                        alt={`${investor.fullname}`}
+                        className="w-16 h-16 rounded-full border-2 border-slate-600"
                       />
                       <div>
-                        <h3 className="text-xl font-bold text-white font-poppins">
-                          {investor.name}
+                        <h3 className="text-lg font-bold text-white">
+                          {investor.fullname}
                         </h3>
-                        <p className="text-sm text-slate-400 flex items-center">
-                          <MapPin className="w-3.5 h-3.5 mr-1.5" />
+                        <p className="text-sm text-slate-400">
                           {investor.location}
                         </p>
                       </div>
                     </div>
                     <p className="text-slate-300 mb-4 text-sm flex-grow">
-                      {investor.bio}
+                      {investor.bio || "No bio available."}
                     </p>
+
+                    {/* Tags */}
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {investor.industry}
+                    </div>
+
+                    {/* Notable Investments */}
                     <div className="mb-4">
-                      <h4 className="font-semibold text-sm text-cyan-400 mb-2">
+                      <h4 className="text-sm font-semibold text-slate-200 mb-2">
                         Notable Investments
                       </h4>
                       <div className="flex flex-wrap gap-2">
-                        {investor.notableInvestments.slice(0, 3).map((inv) => (
-                          <span
-                            key={inv}
-                            className="text-xs bg-slate-700 text-slate-300 px-2 py-1 rounded-full"
-                          >
-                            {inv}
-                          </span>
-                        ))}
+                        {investor.notableInvestments || "No investments"}
                       </div>
                     </div>
-                    <div className="mt-auto pt-4 border-t border-slate-700/50 flex items-center justify-between">
-                      <p className="text-xs font-semibold text-slate-400">
-                        CONNECT
-                      </p>
-                      <div className="flex items-center space-x-3">
-                        <a
-                          href={investor.socials.linkedin}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-slate-400 hover:text-cyan-400 transition-colors"
-                        >
-                          <Linkedin className="w-5 h-5" />
-                        </a>
-                        <a
-                          href={investor.socials.twitter}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-slate-400 hover:text-cyan-400 transition-colors"
-                        >
-                          <Twitter className="w-5 h-5" />
-                        </a>
-                        <a
-                          href={investor.socials.website}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-slate-400 hover:text-cyan-400 transition-colors"
-                        >
-                          <Globe className="w-5 h-5" />
-                        </a>
-                      </div>
+
+                    {/* Social Links */}
+                    <div className="flex items-center gap-4 mt-auto pt-4 border-t border-slate-700/50">
+                      <a
+                        // href={investor.socials.linkedin}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-slate-400 hover:text-cyan-400"
+                      >
+                        <Linkedin className="w-5 h-5" />
+                      </a>
+                      <a
+                        // href={investor.socials.twitter}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-slate-400 hover:text-cyan-400"
+                      >
+                        <Twitter className="w-5 h-5" />
+                      </a>
+                      <a
+                        // href={investor.socials.website}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-slate-400 hover:text-cyan-400"
+                      >
+                        <Globe className="w-5 h-5" />
+                      </a>
                     </div>
                   </div>
                 ))
               ) : (
-                <div className="md:col-span-2 text-center py-16">
-                  <p className="text-slate-400 text-lg">
-                    No investors match your criteria.
-                  </p>
-                </div>
+                <p className="text-center text-slate-400 lg:col-span-3">
+                  No investors found matching your criteria.
+                </p>
               )}
             </div>
           </main>
         </div>
       </div>
 
-      {/* Become an Investor Button */}
+      {/* Add Investor Button */}
       <button
         onClick={() => {
           if (isLoggedIn) {
             setShowForm(true);
           } else {
-            alert("You need to be logged in to become an investor.");
+            setShowLoginAlert(true);
           }
         }}
-        className="fixed bottom-6 right-6 flex items-center gap-2 px-5 py-3 rounded-full bg-cyan-400 font-bold shadow-lg shadow-cyan-500/20 hover:scale-105 hover:bg-cyan-300 transition-all transform z-50 text-white"
+        className="fixed bottom-6 right-6 flex items-center gap-2 px-5 py-3 rounded-full bg-cyan-400 text-white font-bold shadow-lg shadow-cyan-500/20 hover:scale-105 hover:bg-cyan-300 transition-all transform z-50 "
       >
         <PlusCircle className="w-5 h-5" />
         Become an Investor
       </button>
 
-      {/* Submit Form Modal */}
-      {showForm && <SubmitInvestorForm onClose={() => setShowForm(false)} />}
+      {/* Investor Form Modal */}
+      {showForm && (
+        <SubmitInvestorForm
+          onClose={() => setShowForm(false)}
+          addInvestor={addInvestor}
+        />
+      )}
+
+      {/* Login Alert */}
+      {showLoginAlert && (
+        <div className="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm flex justify-center items-center z-50">
+          <Alert
+            severity="warning"
+            onClose={() => {
+              setShowLoginAlert(false);
+            }}
+            className="max-w-md"
+          >
+            <AlertTitle>Login Required</AlertTitle>
+            You need to be logged in to become an investor.
+          </Alert>
+        </div>
+      )}
     </div>
   );
 };
 
 // --- SUBMIT INVESTOR FORM COMPONENT (Modal) ---
-const SubmitInvestorForm = ({ onClose }) => {
+const SubmitInvestorForm = ({ onClose, addInvestor }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("Investor form submitted");
+    const formData = new FormData(e.target);
+    const startupData = Object.fromEntries(formData.entries());
+    // Convert fundingNeeded to a number
+    // startupData.fundingNeeded = Number(startupData.fundingNeeded);
+    addInvestor(startupData); // Pass form data to the addStartup function
     onClose();
+    window.location.href = "/investors"; // Redirect to investors page after submission
   };
 
+  const industryOptions = [
+    "SaaS (Software as a Service)",
+    "AI & Machine Learning",
+    "Cybersecurity",
+    "Cloud Computing",
+    "DevOps",
+    "Data Analytics & Big Data",
+    "Enterprise Software",
+    "Mobile Apps",
+    "Web Development",
+    "IT Services",
+    "HealthTech",
+    "BioTech",
+    "MedTech (Medical Devices)",
+    "Pharmaceuticals",
+    "Mental Health",
+    "Fitness & Wellness",
+    "Telemedicine",
+    "FinTech",
+    "E-commerce",
+    "Marketplace",
+    "InsurTech (Insurance Tech)",
+    "RegTech (Regulatory Tech)",
+    "Cryptocurrency & Blockchain",
+    "WealthTech",
+    "Lending",
+    "Gaming",
+    "Social Media",
+    "Content Creation",
+    "Streaming Services",
+    "AdTech (Advertising Tech)",
+    "AR/VR (Augmented/Virtual Reality)",
+    "Publishing",
+    "FoodTech",
+    "Fashion & Apparel",
+    "Consumer Electronics",
+    "Home Goods",
+    "Travel & Hospitality",
+    "EdTech (Education Tech)",
+    "AgriTech (Agriculture Tech)",
+    "Pet Tech",
+    "CleanTech",
+    "Renewable Energy",
+    "ClimateTech",
+    "EV (Electric Vehicles)",
+    "Waste Management",
+    "Sustainable Materials",
+    "IoT (Internet of Things)",
+    "Robotics",
+    "3D Printing",
+    "Aerospace",
+    "Automotive",
+    "Semiconductors",
+    "Logistics & Supply Chain",
+    "Real Estate Tech (PropTech)",
+    "HR Tech",
+    "Legal Tech",
+    "Marketing Tech (MarTech)",
+  ];
+
+  const fundingStageOptions = [
+    "Pre-Seed",
+    "Seed",
+    "Series A",
+    "Series B",
+    "Series C",
+    "Series D",
+  ];
+  const riskOptions = ["Low", "Medium", "High"];
   return (
     <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 animate-fadeIn">
       <div className="relative w-full max-w-3xl">
@@ -373,7 +447,6 @@ const SubmitInvestorForm = ({ onClose }) => {
 
         {/* Form Container */}
         <div className="relative bg-slate-800/80 backdrop-blur-lg border border-slate-700/80 rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-slideUp">
-          {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-slate-700/80 flex-shrink-0">
             <h2 className="text-2xl font-bold !text-white font-poppins">
               Become an Investor
@@ -400,7 +473,7 @@ const SubmitInvestorForm = ({ onClose }) => {
                 <FormField
                   icon={<User />}
                   label="Full Name"
-                  name="fullName"
+                  name="fullname"
                   placeholder="e.g., Bhavya Tyagi"
                   required
                 />
@@ -419,13 +492,6 @@ const SubmitInvestorForm = ({ onClose }) => {
                   placeholder="e.g., Bengaluru, India"
                   required
                 />
-                <FormField
-                  icon={<Linkedin />}
-                  label="LinkedIn Profile URL"
-                  name="linkedin"
-                  placeholder="linkedin.com/in/your-profile"
-                  required
-                />
               </div>
             </section>
 
@@ -434,14 +500,151 @@ const SubmitInvestorForm = ({ onClose }) => {
               <h3 className="text-lg font-semibold text-cyan-400 mb-4">
                 Investment Thesis
               </h3>
-              <div className="space-y-5">
-                <FormField
-                  icon={<Briefcase />}
-                  label="Industries of Interest"
-                  name="industryFocus"
-                  placeholder="e.g., FinTech, SaaS, HealthTech"
-                  required
-                />
+              <div className="space-y-5 ">
+                <div className="grid md:grid-cols-2 gap-5">
+                  {/* --- MODIFIED INDUSTRY FIELD --- */}
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                      Industry
+                    </label>
+                    <div className="relative flex items-center">
+                      <div className="absolute left-3 text-slate-500 pointer-events-none">
+                        <Briefcase className="w-5 h-5" />
+                      </div>
+                      <select
+                        name="industry"
+                        required
+                        className="w-full bg-slate-900 border border-slate-700 rounded-lg py-2.5 pl-10 pr-4 text-slate-300 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 appearance-none" // `appearance-none` removes default OS styling
+                        defaultValue=""
+                      >
+                        <option value="" className="text-slate-500">
+                          Select an industry
+                        </option>
+                        {industryOptions.map((opt, index) => (
+                          <option
+                            key={index}
+                            value={opt}
+                            className="text-slate-300 "
+                          >
+                            {opt}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="absolute right-3 text-slate-500 pointer-events-none">
+                        <ChevronDown className="w-5 h-5" />
+                      </div>
+                    </div>
+                  </div>
+                  {/* --- MODIFIED FUNDING STAGE FIELD --- */}
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                      Current Funding Stage
+                    </label>
+                    <div className="relative flex items-center">
+                      <div className="absolute left-3 text-slate-500 pointer-events-none">
+                        <Target className="w-5 h-5" />
+                      </div>
+                      <select
+                        name="fundingStage"
+                        required
+                        className="w-full bg-slate-900 border border-slate-700 rounded-lg py-2.5 pl-10 pr-4 text-slate-300 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 appearance-none " // `appearance-none` removes default OS styling
+                        defaultValue=""
+                      >
+                        <option value="" className="text-slate-500">
+                          Select Funding Stage
+                        </option>
+                        {fundingStageOptions.map((opt, index) => (
+                          <option
+                            key={index}
+                            value={opt}
+                            className="text-slate-300 "
+                          >
+                            {opt}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="absolute right-3 text-slate-500 pointer-events-none">
+                        <ChevronDown className="w-5 h-5" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="grid md:grid-cols-2 gap-5">
+                  {/* --- MODIFIED RISK FIELD --- */}
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                      Risk Tolerance
+                    </label>
+                    <div className="relative flex items-center">
+                      <div className="absolute left-3 text-slate-500 pointer-events-none">
+                        <ShieldAlert className="w-5 h-5" />
+                      </div>
+                      <select
+                        name="risk"
+                        required
+                        className="w-full bg-slate-900 border border-slate-700 rounded-lg py-2.5 pl-10 pr-4 text-slate-300 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 appearance-none" // `appearance-none` removes default OS styling
+                        defaultValue=""
+                      >
+                        <option value="" className="text-slate-500">
+                          Select Risk Tolerance
+                        </option>
+                        {riskOptions.map((opt, index) => (
+                          <option
+                            key={index}
+                            value={opt}
+                            className="text-slate-300 "
+                          >
+                            {opt}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="absolute right-3 text-slate-500 pointer-events-none">
+                        <ChevronDown className="w-5 h-5" />
+                      </div>
+                    </div>
+                  </div>
+                  {/* --- PORTFOLIO SIZE FIELD --- */}
+                  {/*<div>
+                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                      Portfolio Size
+                    </label>
+                    <div className="relative flex items-center">
+                      <div className="absolute left-3 text-slate-500 pointer-events-none">
+                        <Target className="w-5 h-5" />
+                      </div>
+                      <select
+                        name="fundingStage"
+                        required
+                        className="w-full bg-slate-900 border border-slate-700 rounded-lg py-2.5 pl-10 pr-4 text-slate-300 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 appearance-none " // `appearance-none` removes default OS styling
+                        defaultValue=""
+                      >
+                        <option value="" className="text-slate-500">
+                          Select Funding Stage
+                        </option>
+                        {fundingStageOptions.map((opt, index) => (
+                          <option
+                            key={index}
+                            value={opt}
+                            className="text-slate-300 "
+                          >
+                            {opt}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="absolute right-3 text-slate-500 pointer-events-none">
+                        <ChevronDown className="w-5 h-5" />
+                      </div>
+                    </div>
+                  </div>*/}
+
+                  <FormField
+                    icon={<Wallet />}
+                    label="Portfolio Size"
+                    isTextArea={false}
+                    name="portfolioSize"
+                    placeholder="Your portfolio size..."
+                  />
+                </div>
                 <FormField
                   icon={<Lightbulb />}
                   label="Investment Philosophy"
@@ -465,32 +668,6 @@ const SubmitInvestorForm = ({ onClose }) => {
           </form>
         </div>
       </div>
-      <style jsx>{`
-        @keyframes slideUp {
-          from {
-            opacity: 0;
-            transform: translateY(30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        .animate-slideUp {
-          animation: slideUp 0.4s ease-out forwards;
-        }
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
-        }
-        .animate-fadeIn {
-          animation: fadeIn 0.3s ease-in forwards;
-        }
-      `}</style>
     </div>
   );
 };

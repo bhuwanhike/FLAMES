@@ -73,7 +73,7 @@ const Explore = () => {
       }`
     );
     const news = response.data.articles;
-    console.log(news);
+    // console.log(news);
     setFundedStartups(news);
   };
   useEffect(() => {
